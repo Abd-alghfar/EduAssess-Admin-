@@ -8,6 +8,7 @@ import '../../models/message_model.dart';
 import '../../providers/chat_provider.dart';
 import '../../services/supabase_service.dart';
 import '../../widgets/shimmer_loader.dart';
+import '../../core/error/failure.dart';
 
 class ChatRoomScreen extends StatefulWidget {
   final Profile student;
@@ -199,10 +200,21 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                   final text = _messageController.text.trim();
                   if (text.isNotEmpty) {
                     _messageController.clear();
-                    await context.read<ChatProvider>().sendMessage(
-                      widget.student.id,
-                      text,
-                    );
+                    try {
+                      await context.read<ChatProvider>().sendMessage(
+                        widget.student.id,
+                        text,
+                      );
+                    } catch (e) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(Failure.getFriendlyMessage(e)),
+                            backgroundColor: Colors.red.shade700,
+                          ),
+                        );
+                      }
+                    }
                   }
                 },
               ),

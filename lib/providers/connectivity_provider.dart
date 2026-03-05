@@ -7,6 +7,7 @@ enum ConnectivityStatus { connected, disconnected }
 class ConnectivityProvider extends ChangeNotifier {
   ConnectivityStatus _status = ConnectivityStatus.connected;
   ConnectivityStatus get status => _status;
+  Timer? _debounceTimer;
 
   StreamSubscription<InternetStatus>? _subscription;
 
@@ -22,15 +23,29 @@ class ConnectivityProvider extends ChangeNotifier {
     notifyListeners();
 
     _subscription = InternetConnection().onStatusChange.listen((status) {
-      _status = status == InternetStatus.connected
-          ? ConnectivityStatus.connected
-          : ConnectivityStatus.disconnected;
-      notifyListeners();
+      if (status == InternetStatus.connected) {
+        _debounceTimer?.cancel();
+        if (_status != ConnectivityStatus.connected) {
+          _status = ConnectivityStatus.connected;
+          notifyListeners();
+        }
+      } else {
+        // Debounce: Wait 5 seconds before showing disconnected banner
+        _debounceTimer?.cancel();
+        _debounceTimer = Timer(const Duration(seconds: 5), () async {
+          final stillOut = !(await InternetConnection().hasInternetAccess);
+          if (stillOut && _status != ConnectivityStatus.disconnected) {
+            _status = ConnectivityStatus.disconnected;
+            notifyListeners();
+          }
+        });
+      }
     });
   }
 
   @override
   void dispose() {
+    _debounceTimer?.cancel();
     _subscription?.cancel();
     super.dispose();
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/admin_provider.dart';
 import '../../models/profile_model.dart';
+import '../../core/error/failure.dart';
 
 class AddStudentDialog extends StatefulWidget {
   final Profile? profile;
@@ -125,9 +126,12 @@ class _AddStudentDialogState extends State<AddStudentDialog> {
       if (mounted) Navigator.pop(context);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(Failure.getFriendlyMessage(e)),
+            backgroundColor: Colors.red.shade700,
+          ),
+        );
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);

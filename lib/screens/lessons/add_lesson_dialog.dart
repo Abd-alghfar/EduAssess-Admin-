@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/admin_provider.dart';
 import '../../models/lesson_model.dart';
+import '../../core/error/failure.dart';
 
 class AddLessonDialog extends StatefulWidget {
   final Lesson? lesson;
@@ -191,9 +192,12 @@ class _AddLessonDialogState extends State<AddLessonDialog> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(Failure.getFriendlyMessage(e)),
+            backgroundColor: Colors.red.shade700,
+          ),
+        );
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
