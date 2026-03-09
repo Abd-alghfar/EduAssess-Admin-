@@ -104,11 +104,7 @@ class _QuestionsListScreenState extends State<QuestionsListScreen> {
                                     borderRadius: BorderRadius.circular(4),
                                   ),
                                   child: Text(
-                                    q.questionType
-                                        .toString()
-                                        .split('.')
-                                        .last
-                                        .toUpperCase(),
+                                    _getQuestionTypeLabel(q.questionType),
                                     style: TextStyle(
                                       fontSize: 10,
                                       color: Theme.of(
@@ -200,5 +196,16 @@ class _QuestionsListScreenState extends State<QuestionsListScreen> {
         ],
       ),
     );
+  }
+
+  String _getQuestionTypeLabel(QuestionType type) {
+    switch (type) {
+      case QuestionType.mcq:
+        return 'MULTIPLE CHOICE';
+      case QuestionType.true_false:
+        return 'TRUE / FALSE';
+      case QuestionType.completion:
+        return 'ESSAY / WRITTEN';
+    }
   }
 }

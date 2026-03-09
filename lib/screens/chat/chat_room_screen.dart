@@ -104,7 +104,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                     ),
                   ),
                   const Text(
-                    'Educational Chat',
+                    'Educational Support',
                     style: TextStyle(fontSize: 12, color: Colors.grey),
                   ),
                 ],

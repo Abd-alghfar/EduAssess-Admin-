@@ -27,7 +27,7 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
   List<TextEditingController> _optionControllers = [];
   String? _mcqCorrectAnswer;
 
-  // Code Completion state
+  // Completion state
   late TextEditingController _snippetController;
   late TextEditingController _placeholderController;
   late TextEditingController _codeCorrectAnswerController;
@@ -58,7 +58,7 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
             .map((e) => TextEditingController(text: e))
             .toList();
         _mcqCorrectAnswer = config['correct_answer'];
-      } else if (_type == QuestionType.code_completion) {
+      } else if (_type == QuestionType.completion) {
         _snippetController.text = config['code_snippet'] ?? '';
         _placeholderController.text = config['placeholder'] ?? '';
         _codeCorrectAnswerController.text = config['correct_answer'] ?? '';
@@ -140,12 +140,11 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
         border: OutlineInputBorder(),
       ),
       items: QuestionType.values.map((t) {
-        final label =
-            t == QuestionType.code_completion ? 'COMPLETION' : t.toString().split('.').last.toUpperCase();
-        return DropdownMenuItem(
-          value: t,
-          child: Text(label),
-        );
+        String label = t.toString().split('.').last.toUpperCase();
+        if (t == QuestionType.completion) label = 'ESSAY / WRITTEN RESPONSE';
+        if (t == QuestionType.mcq) label = 'MULTIPLE CHOICE';
+        if (t == QuestionType.true_false) label = 'TRUE / FALSE';
+        return DropdownMenuItem(value: t, child: Text(label));
       }).toList(),
       onChanged: (val) {
         if (val != null) setState(() => _type = val);
@@ -188,7 +187,7 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
         return _buildMCQConfig();
       case QuestionType.true_false:
         return _buildTFConfig();
-      case QuestionType.code_completion:
+      case QuestionType.completion:
         return _buildCodeConfig();
     }
   }
@@ -329,10 +328,8 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
       };
     } else if (_type == QuestionType.true_false) {
       config = {'correct_answer': _tfCorrectAnswer};
-    } else if (_type == QuestionType.code_completion) {
-      config = {
-        'correct_answer': _codeCorrectAnswerController.text,
-      };
+    } else if (_type == QuestionType.completion) {
+      config = {'correct_answer': _codeCorrectAnswerController.text};
     }
 
     final question = Question(

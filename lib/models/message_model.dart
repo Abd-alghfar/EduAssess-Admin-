@@ -15,14 +15,27 @@ class ChatMessage {
     required this.createdAt,
   });
 
-  // Check if message is from the instructor
-  bool get isFromTeacher => content?.startsWith('[INSTRUCTOR]') ?? false;
+  // Check if message is from the teacher
+  bool get isFromTeacher {
+    if (content == null) return false;
+    return content!.startsWith('[TEACHER]') ||
+        content!.startsWith('[معلم]') ||
+        content!.startsWith('[ADMIN]') ||
+        content!.startsWith('[INSTRUCTOR]');
+  }
 
-  // Get display content without the [INSTRUCTOR] prefix
+  // Get display content without the teacher prefix
   String get displayContent {
     if (content == null) return '';
     if (isFromTeacher) {
-      return content!.replaceFirst('[INSTRUCTOR]', '').trim();
+      String clean = content!;
+      for (final p in ['[TEACHER]', '[معلم]', '[ADMIN]', '[INSTRUCTOR]']) {
+        if (clean.startsWith(p)) {
+          clean = clean.replaceFirst(p, '').trim();
+          break;
+        }
+      }
+      return clean;
     }
     return content!;
   }

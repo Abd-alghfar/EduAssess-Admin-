@@ -11,8 +11,6 @@ class ReportService {
   }) async {
     final pdf = pw.Document();
 
-    final insights = _generateAIInsights(answers);
-
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4.landscape,
@@ -22,7 +20,7 @@ class ReportService {
             alignment: pw.Alignment.centerRight,
             margin: const pw.EdgeInsets.only(top: 10),
             child: pw.Text(
-              'Academic Intel v2.0 - Page ${context.pageNumber} of ${context.pagesCount}',
+              'EduAssess Report System - Page ${context.pageNumber} of ${context.pagesCount}',
               style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey),
             ),
           );
@@ -110,38 +108,6 @@ class ReportService {
                 4: const pw.FlexColumnWidth(1),
               },
             ),
-            pw.SizedBox(height: 30),
-            pw.Container(
-              padding: const pw.EdgeInsets.all(15),
-              decoration: pw.BoxDecoration(
-                color: PdfColors.grey100,
-                border: pw.Border(
-                  left: pw.BorderSide(color: PdfColors.blue900, width: 4),
-                ),
-              ),
-              child: pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  pw.Text(
-                    'AI ACADEMIC INSIGHTS',
-                    style: pw.TextStyle(
-                      fontSize: 12,
-                      fontWeight: pw.FontWeight.bold,
-                      color: PdfColors.blue900,
-                    ),
-                  ),
-                  pw.SizedBox(height: 8),
-                  pw.Text(
-                    insights,
-                    style: pw.TextStyle(
-                      fontSize: 10,
-                      color: PdfColors.grey900,
-                      fontStyle: pw.FontStyle.italic,
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ];
         },
       ),
@@ -150,24 +116,5 @@ class ReportService {
     await Printing.layoutPdf(
       onLayout: (PdfPageFormat format) async => pdf.save(),
     );
-  }
-
-  static String _generateAIInsights(List<StudentAnswer> answers) {
-    if (answers.isEmpty)
-      return "No critical performance gaps detected in current dataset.";
-
-    final Map<String, int> lessonMistakes = {};
-    for (var ans in answers) {
-      final lessonTitle = ans.question?.lesson?.title ?? "General Foundations";
-      lessonMistakes[lessonTitle] = (lessonMistakes[lessonTitle] ?? 0) + 1;
-    }
-
-    final sortedMistakes = lessonMistakes.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
-    final worstLesson = sortedMistakes.first.key;
-
-    return "Diagnostic analysis identifies significant cognitive friction in target module: '$worstLesson'. "
-        "System recommendation: Deploy remediated learning pathways and increase practice frequency for students affected by these specific misconception patterns. "
-        "Overall error rate is within acceptable academic deviation thresholds for 2026 standards.";
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../providers/admin_provider.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'students/add_student_dialog.dart';
@@ -32,7 +33,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     final provider = context.watch<AdminProvider>();
     final scheme = Theme.of(context).colorScheme;
-    final bottomInset = MediaQuery.of(context).viewPadding.bottom + 96;
+    final bottomInset = MediaQuery.of(context).viewPadding.bottom + 100;
 
     if (provider.isLoading && provider.students.isEmpty) {
       return const Scaffold(
@@ -55,7 +56,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildModernHeader(scheme),
-              const SizedBox(height: 24),
+              const SizedBox(height: 32),
               Row(
                 children: [
                   _buildStatCard(
@@ -64,7 +65,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     provider.students.length.toString(),
                     FontAwesomeIcons.users,
                     scheme.primary,
-                    scheme.tertiary,
+                    scheme.primaryContainer,
                   ),
                   const SizedBox(width: 16),
                   _buildStatCard(
@@ -73,26 +74,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     provider.lessons.length.toString(),
                     FontAwesomeIcons.bookOpen,
                     const Color(0xFFF59E0B),
-                    scheme.secondary,
+                    const Color(0xFFFEF3C7),
                   ),
                 ],
               ),
-              const SizedBox(height: 28),
-              // NEW Feature: Performance Chart
+              const SizedBox(height: 32),
+              // Performance Chart
+              Text(
+                'Performance Trends',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: scheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 16),
               PerformanceChart(data: provider.completionTrend),
-              const SizedBox(height: 28),
+              const SizedBox(height: 32),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'Quick Discovery',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
                   Text(
-                    'Build fast. Teach smarter.',
+                    'Quick Actions',
                     style: TextStyle(
-                      color: scheme.onSurfaceVariant.withValues(alpha: 0.6),
-                      fontSize: 12,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: scheme.onSurface,
                     ),
                   ),
                 ],
@@ -100,6 +107,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               const SizedBox(height: 16),
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
                 child: Row(
                   children: [
                     _buildActionCard(
@@ -148,8 +156,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     _buildActionCard(
                       context,
                       'Analytics',
-                      FontAwesomeIcons.chartBar,
-                      scheme.tertiary,
+                      FontAwesomeIcons.chartPie,
+                      const Color(0xFF8B5CF6),
                       () {
                         Navigator.push(
                           context,
@@ -162,14 +170,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 28),
-              // Lesson Success Rates Section
+              const SizedBox(height: 32),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'Quiz Performance',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: scheme.onSurface,
+                    ),
                   ),
                   TextButton(
                     onPressed: () {
@@ -191,18 +202,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   final rates = adminProvider.lessonSuccessRates;
                   if (lessons.isEmpty) {
                     return Container(
-                      padding: const EdgeInsets.all(32),
+                      padding: const EdgeInsets.all(40),
+                      width: double.infinity,
                       decoration: BoxDecoration(
-                        color: scheme.surfaceContainerHighest.withValues(
-                          alpha: 0.3,
-                        ),
-                        borderRadius: BorderRadius.circular(20),
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: scheme.outlineVariant),
                       ),
-                      child: Center(
-                        child: Text(
-                          'No quizzes deployed yet.',
-                          style: TextStyle(color: scheme.onSurfaceVariant),
-                        ),
+                      child: Column(
+                        children: [
+                          Icon(
+                            FontAwesomeIcons.inbox,
+                            color: scheme.outlineVariant,
+                            size: 40,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'No quizzes deployed yet.',
+                            style: TextStyle(
+                              color: scheme.onSurfaceVariant,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
                       ),
                     );
                   }
@@ -230,65 +252,62 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildModernHeader(ColorScheme scheme) {
     return Container(
-      padding: const EdgeInsets.all(28),
+      padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            const Color(0xFF0F172A),
-            const Color(0xFF1E293B),
-            scheme.primary.withValues(alpha: 0.8),
-          ],
-        ),
+        color: scheme.primary,
         borderRadius: BorderRadius.circular(32),
+        image: const DecorationImage(
+          image: NetworkImage(
+            'https://www.transparenttextures.com/patterns/carbon-fibre.png',
+          ),
+          opacity: 0.1,
+          repeat: ImageRepeat.repeat,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
-            blurRadius: 30,
-            offset: const Offset(0, 15),
+            color: scheme.primary.withValues(alpha: 0.3),
+            blurRadius: 24,
+            offset: const Offset(0, 12),
           ),
         ],
       ),
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-            ),
-            child: const Icon(
-              FontAwesomeIcons.rocket,
-              color: Colors.white,
-              size: 28,
-            ),
-          ),
-          const SizedBox(width: 20),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'Dashboard',
-                  style: TextStyle(
+                  style: GoogleFonts.plusJakartaSans(
                     color: Colors.white,
-                    fontSize: 28,
+                    fontSize: 32,
                     fontWeight: FontWeight.w900,
-                    letterSpacing: -0.5,
+                    letterSpacing: -1,
                   ),
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Text(
-                  '2026 Academic Intel v2.0',
+                  'EduAssess Management System',
                   style: TextStyle(
-                    color: Colors.white70,
+                    color: Colors.white.withValues(alpha: 0.7),
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const Icon(
+              FontAwesomeIcons.rocket,
+              color: Colors.white,
+              size: 24,
             ),
           ),
         ],
@@ -301,24 +320,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
     String title,
     String value,
     IconData icon,
-    Color colorStart,
-    Color colorEnd,
+    Color color,
+    Color bgColor,
   ) {
     final scheme = Theme.of(context).colorScheme;
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: scheme.surface,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: scheme.outlineVariant.withValues(alpha: 0.5),
-          ),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(28),
+          border: Border.all(color: scheme.outlineVariant),
           boxShadow: [
             BoxShadow(
-              color: colorStart.withValues(alpha: 0.05),
+              color: scheme.onSurface.withValues(alpha: 0.02),
               blurRadius: 20,
-              offset: const Offset(0, 10),
+              offset: const Offset(0, 8),
             ),
           ],
         ),
@@ -328,21 +345,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    colorStart.withValues(alpha: 0.2),
-                    colorEnd.withValues(alpha: 0.1),
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(14),
+                color: bgColor,
+                borderRadius: BorderRadius.circular(16),
               ),
-              child: Icon(icon, color: colorStart, size: 20),
+              child: Icon(icon, color: color, size: 20),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
             Text(
               value,
-              style: const TextStyle(
-                fontSize: 36,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 32,
                 fontWeight: FontWeight.w900,
                 letterSpacing: -1,
               ),
@@ -351,7 +363,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               title,
               style: TextStyle(
                 color: scheme.onSurfaceVariant,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w700,
                 fontSize: 13,
               ),
             ),
@@ -371,27 +383,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final scheme = Theme.of(context).colorScheme;
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(24),
+      borderRadius: BorderRadius.circular(28),
       child: Container(
-        width: 150,
-        padding: const EdgeInsets.all(24),
+        width: 140,
+        padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 16),
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: color.withValues(alpha: 0.1)),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(28),
+          border: Border.all(color: scheme.outlineVariant),
         ),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 30, color: color),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, size: 24, color: color),
+            ),
             const SizedBox(height: 16),
             Text(
               title,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontWeight: FontWeight.w700,
-                color: scheme.onSurface,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
             ),
           ],
         ),
@@ -406,81 +421,79 @@ class _DashboardScreenState extends State<DashboardScreen> {
     int count,
     ColorScheme scheme,
   ) {
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.5)),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: scheme.outlineVariant),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: scheme.primaryContainer.withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Icon(
-                FontAwesomeIcons.graduationCap,
-                size: 20,
-                color: scheme.primary,
-              ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: scheme.primary.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(16),
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    lesson.title,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 16,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Completed by $count students',
-                    style: TextStyle(
-                      color: scheme.onSurfaceVariant,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              ),
+            child: Icon(
+              FontAwesomeIcons.graduationCap,
+              size: 20,
+              color: scheme.primary,
             ),
-            const SizedBox(width: 16),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '${rate.toStringAsFixed(1)}%',
-                  style: TextStyle(
-                    color: scheme.primary,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 18,
+                  lesson.title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 16,
                   ),
                 ),
-                const SizedBox(height: 8),
-                SizedBox(
-                  width: 80,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(999),
-                    child: LinearProgressIndicator(
-                      value: rate / 100,
-                      backgroundColor: scheme.surfaceContainerHighest,
-                      color: scheme.primary,
-                      minHeight: 6,
-                    ),
+                Text(
+                  'Completed by $count students',
+                  style: TextStyle(
+                    color: scheme.onSurfaceVariant,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+          const SizedBox(width: 16),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                '${rate.toStringAsFixed(1)}%',
+                style: TextStyle(
+                  color: scheme.primary,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 18,
+                ),
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: 70,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: LinearProgressIndicator(
+                    value: rate / 100,
+                    backgroundColor: scheme.outlineVariant,
+                    color: scheme.primary,
+                    minHeight: 6,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

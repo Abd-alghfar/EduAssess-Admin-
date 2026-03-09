@@ -67,8 +67,8 @@ class _StudentAnswersScreenState extends State<StudentAnswersScreen> {
           return config['is_correct_true'] == true ? "True" : "False";
         }
         return "N/A";
-      case QuestionType.code_completion:
-        return config['solution'] ?? "N/A";
+      case QuestionType.completion:
+        return config['solution'] ?? config['correct_answer'] ?? "N/A";
     }
   }
 
@@ -253,8 +253,9 @@ class _StudentAnswersScreenState extends State<StudentAnswersScreen> {
                                   decoration: BoxDecoration(
                                     color: Colors.blue.shade50,
                                     borderRadius: BorderRadius.circular(8),
-                                    border:
-                                        Border.all(color: Colors.blue.shade100),
+                                    border: Border.all(
+                                      color: Colors.blue.shade100,
+                                    ),
                                   ),
                                   child: Text(
                                     'Score: ${ans.scoreAttained} / ${ans.question?.points ?? 0}',

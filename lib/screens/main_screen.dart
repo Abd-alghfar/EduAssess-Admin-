@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'dashboard_screen.dart';
 import 'students/students_screen.dart';
 import 'lessons/lessons_screen.dart';
@@ -32,14 +33,13 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              scheme.surface,
-              scheme.surface.withValues(alpha: 0.8),
-              const Color(0xFFF8FAFF),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+          color: const Color(0xFFF8FAFC),
+          image: DecorationImage(
+            image: const NetworkImage(
+              'https://www.transparenttextures.com/patterns/cubes.png',
+            ),
+            opacity: 0.03,
+            repeat: ImageRepeat.repeat,
           ),
         ),
         child: Row(
@@ -50,49 +50,61 @@ class _MainScreenState extends State<MainScreen> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   border: Border(
-                    right: BorderSide(
-                      color: scheme.primary.withValues(alpha: 0.08),
-                    ),
+                    right: BorderSide(color: scheme.outlineVariant),
                   ),
                 ),
                 child: Column(
                   children: [
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
+                      padding: const EdgeInsets.fromLTRB(28, 48, 28, 40),
                       child: Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.all(10),
+                            padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
-                                colors: [scheme.primary, scheme.secondary],
+                                colors: [
+                                  scheme.primary,
+                                  scheme.primary.withValues(alpha: 0.8),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
                               ),
-                              borderRadius: BorderRadius.circular(14),
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: scheme.primary.withValues(alpha: 0.3),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
                             ),
                             child: const Icon(
                               FontAwesomeIcons.graduationCap,
                               color: Colors.white,
-                              size: 18,
+                              size: 22,
                             ),
                           ),
-                          const SizedBox(width: 12),
-                          const Expanded(
+                          const SizedBox(width: 16),
+                          Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'ClassPulse',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w800,
+                                  'EduAssess',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: -0.5,
+                                    color: scheme.onSurface,
                                   ),
                                 ),
-                                SizedBox(height: 2),
                                 Text(
                                   'Teacher Studio',
-                                  style: TextStyle(
+                                  style: GoogleFonts.plusJakartaSans(
                                     fontSize: 12,
-                                    color: Color(0xFF64748B),
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF64748B),
                                   ),
                                 ),
                               ],
@@ -110,12 +122,24 @@ class _MainScreenState extends State<MainScreen> {
                           });
                         },
                         extended: true,
-                        labelType: NavigationRailLabelType.none,
-                        backgroundColor: Colors.white,
-                        selectedIconTheme: IconThemeData(color: scheme.primary),
-                        selectedLabelTextStyle: TextStyle(
+                        backgroundColor: Colors.transparent,
+                        unselectedIconTheme: IconThemeData(
+                          color: scheme.onSurfaceVariant.withValues(alpha: 0.7),
+                          size: 20,
+                        ),
+                        selectedIconTheme: IconThemeData(
                           color: scheme.primary,
+                          size: 22,
+                        ),
+                        unselectedLabelTextStyle: GoogleFonts.plusJakartaSans(
+                          color: scheme.onSurfaceVariant.withValues(alpha: 0.7),
                           fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                        ),
+                        selectedLabelTextStyle: GoogleFonts.plusJakartaSans(
+                          color: scheme.primary,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 14,
                         ),
                         destinations: const [
                           NavigationRailDestination(
@@ -128,15 +152,15 @@ class _MainScreenState extends State<MainScreen> {
                           ),
                           NavigationRailDestination(
                             icon: Icon(FontAwesomeIcons.book),
-                            label: Text('Quizzes'),
+                            label: Text('Assessments'),
                           ),
                           NavigationRailDestination(
                             icon: Icon(FontAwesomeIcons.chartBar),
                             label: Text('Reports'),
                           ),
                           NavigationRailDestination(
-                            icon: Icon(FontAwesomeIcons.comment),
-                            label: Text('Chat'),
+                            icon: Icon(FontAwesomeIcons.commentDots),
+                            label: Text('Messages'),
                           ),
                         ],
                       ),
@@ -150,79 +174,79 @@ class _MainScreenState extends State<MainScreen> {
                 extendBody: true,
                 appBar: !isDesktop
                     ? AppBar(
-                        title: const Text('ClassPulse Teacher'),
+                        title: Text(
+                          'EduAssess',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
                         centerTitle: false,
+                        actions: [
+                          IconButton(
+                            icon: const Icon(Icons.notifications_none_rounded),
+                            onPressed: () {},
+                          ),
+                          const SizedBox(width: 8),
+                        ],
                       )
                     : null,
-                body: _screens[_selectedIndex],
+                body: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  child: _screens[_selectedIndex],
+                  transitionBuilder:
+                      (Widget child, Animation<double> animation) {
+                        return FadeTransition(
+                          opacity: animation,
+                          child: SlideTransition(
+                            position: Tween<Offset>(
+                              begin: const Offset(0.01, 0),
+                              end: Offset.zero,
+                            ).animate(animation),
+                            child: child,
+                          ),
+                        );
+                      },
+                ),
                 bottomNavigationBar: !isDesktop
                     ? Container(
                         decoration: BoxDecoration(
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.1),
-                              blurRadius: 10,
-                              offset: const Offset(0, -5),
-                            ),
-                          ],
+                          color: Colors.white.withValues(alpha: 0.8),
+                          border: Border(
+                            top: BorderSide(color: scheme.outlineVariant),
+                          ),
                         ),
                         child: NavigationBar(
                           selectedIndex: _selectedIndex,
                           onDestinationSelected: (index) =>
                               setState(() => _selectedIndex = index),
+                          height: 80,
+                          backgroundColor: Colors.transparent,
+                          elevation: 0,
+                          indicatorColor: scheme.primary.withValues(alpha: 0.1),
                           labelBehavior:
                               NavigationDestinationLabelBehavior.alwaysShow,
-                          height: 70,
-                          backgroundColor: Colors.white,
-                          indicatorColor: scheme.primary.withValues(alpha: 0.1),
                           destinations: [
                             NavigationDestination(
-                              icon: Icon(
-                                FontAwesomeIcons.chartLine,
-                                size: 20,
-                                color: _selectedIndex == 0
-                                    ? scheme.primary
-                                    : Colors.grey,
-                              ),
+                              icon: Icon(FontAwesomeIcons.chartLine, size: 20),
                               label: 'Overview',
                             ),
                             NavigationDestination(
-                              icon: Icon(
-                                FontAwesomeIcons.users,
-                                size: 20,
-                                color: _selectedIndex == 1
-                                    ? scheme.primary
-                                    : Colors.grey,
-                              ),
+                              icon: Icon(FontAwesomeIcons.users, size: 20),
                               label: 'Students',
                             ),
                             NavigationDestination(
-                              icon: Icon(
-                                FontAwesomeIcons.book,
-                                size: 20,
-                                color: _selectedIndex == 2
-                                    ? scheme.primary
-                                    : Colors.grey,
-                              ),
-                              label: 'Quizzes',
+                              icon: Icon(FontAwesomeIcons.book, size: 20),
+                              label: 'Exams',
                             ),
                             NavigationDestination(
-                              icon: Icon(
-                                FontAwesomeIcons.chartBar,
-                                size: 20,
-                                color: _selectedIndex == 3
-                                    ? scheme.primary
-                                    : Colors.grey,
-                              ),
+                              icon: Icon(FontAwesomeIcons.chartBar, size: 20),
                               label: 'Reports',
                             ),
                             NavigationDestination(
                               icon: Icon(
-                                FontAwesomeIcons.comment,
+                                FontAwesomeIcons.commentDots,
                                 size: 20,
-                                color: _selectedIndex == 4
-                                    ? scheme.primary
-                                    : Colors.grey,
                               ),
                               label: 'Chat',
                             ),

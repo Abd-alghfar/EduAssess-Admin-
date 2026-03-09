@@ -35,20 +35,18 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final baseScheme = ColorScheme.fromSeed(
-      seedColor: const Color(0xFF0EA5A8),
-      brightness: Brightness.light,
-    );
-    final scheme = baseScheme.copyWith(
-      primary: const Color(0xFF0EA5A8),
-      secondary: const Color(0xFF6366F1),
-      surface: const Color(0xFFF7F9FC),
-      onPrimary: Colors.white,
-      onSecondary: Colors.white,
-      onSurface: const Color(0xFF0F172A),
-      error: const Color(0xFFEF4444),
-      onError: Colors.white,
-    );
+    final scheme =
+        ColorScheme.fromSeed(
+          seedColor: const Color(0xFF1E3A8A), // Deep Indigo
+          primary: const Color(0xFF1E3A8A),
+          secondary: const Color(0xFF10B981), // Emerald
+          surface: const Color(0xFFF8FAFC), // Slate 50
+          brightness: Brightness.light,
+        ).copyWith(
+          onSurface: const Color(0xFF0F172A), // Slate 900
+          onSurfaceVariant: const Color(0xFF64748B), // Slate 500
+          outlineVariant: const Color(0xFFE2E8F0), // Slate 200
+        );
 
     return MaterialApp(
       title: 'EduAssess Admin',
@@ -57,7 +55,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         colorScheme: scheme,
         scaffoldBackgroundColor: scheme.surface,
-        textTheme: GoogleFonts.spaceGroteskTextTheme().apply(
+        textTheme: GoogleFonts.plusJakartaSansTextTheme().apply(
           bodyColor: scheme.onSurface,
           displayColor: scheme.onSurface,
         ),
@@ -66,48 +64,57 @@ class MyApp extends StatelessWidget {
           backgroundColor: Colors.transparent,
           foregroundColor: scheme.onSurface,
           centerTitle: false,
-          titleTextStyle: GoogleFonts.spaceGrotesk(
+          titleTextStyle: GoogleFonts.plusJakartaSans(
             fontSize: 20,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w800,
             color: scheme.onSurface,
           ),
         ),
         filledButtonTheme: FilledButtonThemeData(
           style: FilledButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(16),
             ),
-            textStyle: GoogleFonts.spaceGrotesk(fontWeight: FontWeight.w700),
+            textStyle: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700),
           ),
         ),
         outlinedButtonTheme: OutlinedButtonThemeData(
           style: OutlinedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(16),
             ),
+            side: BorderSide(color: scheme.outlineVariant, width: 1.5),
+            textStyle: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700),
           ),
         ),
         cardTheme: CardThemeData(
           elevation: 0,
+          color: Colors.white,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: BorderSide(color: Colors.grey.shade200),
+            borderRadius: BorderRadius.circular(24),
+            side: BorderSide(color: scheme.outlineVariant, width: 1),
           ),
         ),
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
           fillColor: Colors.white,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+          contentPadding: const EdgeInsets.all(20),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(18),
+            borderSide: BorderSide(color: scheme.outlineVariant),
+          ),
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide(
-              color: scheme.primary.withValues(alpha: 0.15),
-            ),
+            borderRadius: BorderRadius.circular(18),
+            borderSide: BorderSide(color: scheme.outlineVariant),
           ),
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide(color: scheme.primary, width: 1.4),
+            borderRadius: BorderRadius.circular(18),
+            borderSide: BorderSide(color: scheme.primary, width: 2),
           ),
+          labelStyle: TextStyle(color: scheme.onSurfaceVariant),
+          prefixIconColor: scheme.onSurfaceVariant,
         ),
       ),
       home: const SplashGate(child: MainScreen()),

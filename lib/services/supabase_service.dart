@@ -308,7 +308,7 @@ class SupabaseService {
     String? content,
     String? imageUrl,
   }) async {
-    final prefix = '[INSTRUCTOR]\n';
+    final prefix = '[TEACHER]\n';
     await _supabase.from('messages').insert({
       'sender_id': studentId,
       'content': content != null && content.isNotEmpty
@@ -322,7 +322,7 @@ class SupabaseService {
   Future<void> updateMessage(String messageId, String content) async {
     await _supabase
         .from('messages')
-        .update({'content': '[INSTRUCTOR]\n$content'})
+        .update({'content': '[TEACHER]\n$content'})
         .eq('id', messageId);
   }
 

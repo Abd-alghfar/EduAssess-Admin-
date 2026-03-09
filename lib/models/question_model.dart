@@ -4,7 +4,7 @@ import 'lesson_model.dart';
 enum QuestionType {
   mcq,
   true_false,
-  code_completion;
+  completion;
 
   static QuestionType fromString(String value) {
     return QuestionType.values.firstWhere(
