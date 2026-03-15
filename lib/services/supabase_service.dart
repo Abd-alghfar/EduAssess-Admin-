@@ -32,6 +32,7 @@ class SupabaseService {
           .select('profiles(*)')
           .eq('class_id', classId);
       return (response as List)
+          .where((row) => row['profiles'] != null)
           .map((json) => Profile.fromJson(json['profiles']))
           .toList();
     }
