@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import '../../providers/admin_provider.dart';
+import '../../providers/teacher_provider.dart';
 import '../students/student_detail_screen.dart';
 import '../../widgets/incorrect_answers_list.dart';
 
@@ -17,8 +17,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AdminProvider>().fetchStudents();
-      context.read<AdminProvider>().fetchIncorrectAnswers();
+      context.read<TeacherProvider>().fetchStudents();
+      context.read<TeacherProvider>().fetchIncorrectAnswers();
     });
   }
 
@@ -77,7 +77,7 @@ class StudentPerformanceTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<AdminProvider>();
+    final provider = context.watch<TeacherProvider>();
     final students = provider.students;
     final incorrect = provider.incorrectAnswers;
 

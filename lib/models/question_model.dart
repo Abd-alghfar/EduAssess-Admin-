@@ -47,7 +47,9 @@ class Question {
           ? jsonDecode(json['config'])
           : Map<String, dynamic>.from(json['config']),
       points: json['points'] ?? 1,
-      createdAt: DateTime.parse(json['created_at']),
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'])
+          : DateTime.now(),
       lesson: json['lessons'] != null ? Lesson.fromJson(json['lessons']) : null,
     );
   }

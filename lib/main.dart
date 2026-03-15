@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'core/constants.dart';
-import 'providers/admin_provider.dart';
+import 'providers/teacher_provider.dart';
 import 'providers/chat_provider.dart';
 import 'providers/connectivity_provider.dart';
-
+import 'screens/auth/login_screen.dart';
 import 'screens/main_screen.dart';
 
 void main() async {
@@ -20,11 +21,10 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => AdminProvider()),
+        ChangeNotifierProvider(create: (_) => TeacherProvider()),
         ChangeNotifierProvider(create: (_) => ChatProvider()),
         ChangeNotifierProvider(create: (_) => ConnectivityProvider()),
       ],
-
       child: const MyApp(),
     ),
   );
@@ -37,15 +37,15 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme =
         ColorScheme.fromSeed(
-          seedColor: const Color(0xFF1E3A8A), // Deep Indigo
+          seedColor: const Color(0xFF1E3A8A),
           primary: const Color(0xFF1E3A8A),
-          secondary: const Color(0xFF10B981), // Emerald
-          surface: const Color(0xFFF8FAFC), // Slate 50
+          secondary: const Color(0xFF10B981),
+          surface: const Color(0xFFF8FAFC),
           brightness: Brightness.light,
         ).copyWith(
-          onSurface: const Color(0xFF0F172A), // Slate 900
-          onSurfaceVariant: const Color(0xFF64748B), // Slate 500
-          outlineVariant: const Color(0xFFE2E8F0), // Slate 200
+          onSurface: const Color(0xFF0F172A),
+          onSurfaceVariant: const Color(0xFF64748B),
+          outlineVariant: const Color(0xFFE2E8F0),
         );
 
     return MaterialApp(
@@ -73,6 +73,8 @@ class MyApp extends StatelessWidget {
         filledButtonTheme: FilledButtonThemeData(
           style: FilledButton.styleFrom(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            backgroundColor: scheme.primary,
+            foregroundColor: Colors.white,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
@@ -99,7 +101,7 @@ class MyApp extends StatelessWidget {
         ),
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
-          fillColor: Colors.white,
+          fillColor: const Color(0xFFF8FAFC),
           contentPadding: const EdgeInsets.all(20),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(18),
@@ -117,7 +119,7 @@ class MyApp extends StatelessWidget {
           prefixIconColor: scheme.onSurfaceVariant,
         ),
       ),
-      home: const SplashGate(child: MainScreen()),
+      home: const SplashGate(child: AuthGate()),
       builder: (context, child) {
         final status = context.watch<ConnectivityProvider>().status;
         return Stack(
@@ -139,8 +141,8 @@ class MyApp extends StatelessWidget {
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            Colors.red.shade900.withValues(alpha: 0.95),
-                            Colors.red.shade700.withValues(alpha: 0.95),
+                            Colors.red.shade900.withOpacity(0.95),
+                            Colors.red.shade700.withOpacity(0.95),
                           ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
@@ -148,13 +150,13 @@ class MyApp extends StatelessWidget {
                         borderRadius: BorderRadius.circular(18),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.35),
+                            color: Colors.black.withOpacity(0.35),
                             blurRadius: 14,
                             offset: const Offset(0, 8),
                           ),
                         ],
                         border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.2),
+                          color: Colors.white.withOpacity(0.2),
                           width: 1.2,
                         ),
                       ),
@@ -184,6 +186,26 @@ class MyApp extends StatelessWidget {
               ),
           ],
         );
+      },
+    );
+  }
+}
+
+class AuthGate extends StatelessWidget {
+  const AuthGate({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<SharedPreferences>(
+      future: SharedPreferences.getInstance(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) return const Scaffold();
+        final prefs = snapshot.data!;
+        final teacherId = prefs.getString('teacher_id');
+        if (teacherId == null) {
+          return const LoginScreen();
+        }
+        return const MainScreen();
       },
     );
   }
@@ -245,11 +267,11 @@ class _SplashScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.12),
+                  color: Colors.white.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
-                      color: scheme.primary.withValues(alpha: 0.35),
+                      color: scheme.primary.withOpacity(0.35),
                       blurRadius: 22,
                       offset: const Offset(0, 10),
                     ),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/admin_provider.dart';
+import '../../providers/teacher_provider.dart';
 import '../../models/lesson_model.dart';
 import '../../core/error/failure.dart';
 
@@ -173,7 +173,7 @@ class _AddLessonDialogState extends State<AddLessonDialog> {
           : null;
 
       if (widget.lesson == null) {
-        final created = await context.read<AdminProvider>().addLesson(
+        final created = await context.read<TeacherProvider>().addLesson(
           _titleController.text,
           _descController.text,
           duration,
@@ -181,7 +181,7 @@ class _AddLessonDialogState extends State<AddLessonDialog> {
         );
         if (mounted) Navigator.pop(context, created);
       } else {
-        await context.read<AdminProvider>().updateLesson(
+        await context.read<TeacherProvider>().updateLesson(
           widget.lesson!.id,
           _titleController.text,
           _descController.text,

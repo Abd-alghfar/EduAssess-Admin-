@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import '../providers/admin_provider.dart';
+import '../providers/teacher_provider.dart';
 import '../models/profile_model.dart';
 import '../services/report_service.dart';
 
@@ -18,7 +18,7 @@ class _IncorrectAnswersListState extends State<IncorrectAnswersList> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AdminProvider>().fetchIncorrectAnswers(
+      context.read<TeacherProvider>().fetchIncorrectAnswers(
         studentId: widget.studentId,
       );
     });
@@ -26,7 +26,7 @@ class _IncorrectAnswersListState extends State<IncorrectAnswersList> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<AdminProvider>();
+    final provider = context.watch<TeacherProvider>();
     final incorrect = provider.incorrectAnswers;
     final scheme = Theme.of(context).colorScheme;
 

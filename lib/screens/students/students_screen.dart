@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import '../../providers/admin_provider.dart';
+import '../../providers/teacher_provider.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'add_student_dialog.dart';
 import 'student_detail_screen.dart';
 import '../chat/chat_room_screen.dart';
 import '../../widgets/shimmer_loader.dart';
@@ -20,13 +19,13 @@ class _StudentsScreenState extends State<StudentsScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AdminProvider>().fetchStudents();
+      context.read<TeacherProvider>().fetchStudents();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<AdminProvider>();
+    final provider = context.watch<TeacherProvider>();
     final scheme = Theme.of(context).colorScheme;
     final bottomInset = MediaQuery.of(context).viewPadding.bottom + 100;
 
@@ -50,20 +49,6 @@ class _StudentsScreenState extends State<StudentsScreen> {
               centerTitle: false,
               titlePadding: const EdgeInsets.only(left: 24, bottom: 16),
             ),
-            actions: [
-              Padding(
-                padding: const EdgeInsets.only(right: 16),
-                child: IconButton.filledTonal(
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) => const AddStudentDialog(),
-                    );
-                  },
-                  icon: const Icon(Icons.person_add_rounded),
-                ),
-              ),
-            ],
           ),
           if (provider.isLoading && provider.students.isEmpty)
             const SliverFillRemaining(child: ListShimmer())
@@ -140,7 +125,7 @@ class _StudentsScreenState extends State<StudentsScreen> {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: scheme.primary.withValues(alpha: 0.05),
+                        color: scheme.primary.withOpacity(0.05),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
@@ -155,38 +140,21 @@ class _StudentsScreenState extends State<StudentsScreen> {
                   ],
                 ),
               ),
-              Column(
-                children: [
-                  IconButton(
-                    onPressed: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ChatRoomScreen(student: student),
-                      ),
-                    ),
-                    icon: Icon(
-                      FontAwesomeIcons.commentDots,
-                      size: 18,
-                      color: scheme.primary,
-                    ),
-                    style: IconButton.styleFrom(
-                      backgroundColor: scheme.primary.withValues(alpha: 0.05),
-                    ),
+              IconButton(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ChatRoomScreen(student: student),
                   ),
-                  const SizedBox(height: 4),
-                  IconButton(
-                    onPressed: () => showDialog(
-                      context: context,
-                      builder: (context) => AddStudentDialog(profile: student),
-                    ),
-                    icon: const Icon(Icons.edit_rounded, size: 18),
-                    style: IconButton.styleFrom(
-                      backgroundColor: scheme.outlineVariant.withValues(
-                        alpha: 0.3,
-                      ),
-                    ),
-                  ),
-                ],
+                ),
+                icon: Icon(
+                  FontAwesomeIcons.commentDots,
+                  size: 18,
+                  color: scheme.primary,
+                ),
+                style: IconButton.styleFrom(
+                  backgroundColor: scheme.primary.withOpacity(0.05),
+                ),
               ),
             ],
           ),
@@ -258,15 +226,6 @@ class _StudentsScreenState extends State<StudentsScreen> {
             'Your student roster is currently empty.',
             textAlign: TextAlign.center,
             style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 14),
-          ),
-          const SizedBox(height: 32),
-          FilledButton.icon(
-            onPressed: () => showDialog(
-              context: context,
-              builder: (context) => const AddStudentDialog(),
-            ),
-            icon: const Icon(Icons.add),
-            label: const Text('Add Your First Student'),
           ),
         ],
       ),

@@ -12,12 +12,33 @@ import '../models/message_model.dart';
 class SupabaseService {
   final _supabase = Supabase.instance.client;
 
+  // --- Assignments ---
+  Future<List<Map<String, dynamic>>> getTeacherAssignments(
+    String teacherId,
+  ) async {
+    final response = await _supabase
+        .from('teacher_assignments')
+        .select('*, subjects(name), classes(name)')
+        .eq('teacher_id', teacherId)
+        .eq('is_active', true);
+    return List<Map<String, dynamic>>.from(response);
+  }
+
   // --- Students (Profiles) ---
-  Future<List<Profile>> getStudents() async {
+  Future<List<Profile>> getStudents({String? classId}) async {
+    if (classId != null) {
+      final response = await _supabase
+          .from('class_students')
+          .select('profiles(*)')
+          .eq('class_id', classId);
+      return (response as List)
+          .map((json) => Profile.fromJson(json['profiles']))
+          .toList();
+    }
     final response = await _supabase
         .from('profiles')
         .select()
-        .order('updated_at', ascending: false);
+        .eq('role', 'student');
     return (response as List).map((json) => Profile.fromJson(json)).toList();
   }
 
@@ -76,18 +97,23 @@ class SupabaseService {
   }
 
   // --- Lessons ---
-  Future<List<Lesson>> getLessons() async {
-    final response = await _supabase
-        .from('lessons')
-        .select()
-        .order('created_at', ascending: false);
+  Future<List<Lesson>> getLessons({String? assignmentId}) async {
+    var query = _supabase.from('lessons').select();
+    if (assignmentId != null) {
+      query = query.eq('assignment_id', assignmentId);
+    }
+    final response = await query.order('created_at', ascending: false);
     return (response as List).map((json) => Lesson.fromJson(json)).toList();
   }
 
-  Future<Lesson> createLesson(Lesson lesson) async {
+  Future<Lesson> createLesson(Lesson lesson, {String? assignmentId}) async {
+    final data = lesson.toJson();
+    if (assignmentId != null) {
+      data['assignment_id'] = assignmentId;
+    }
     final response = await _supabase
         .from('lessons')
-        .insert(lesson.toJson())
+        .insert(data)
         .select()
         .single();
     return Lesson.fromJson(response);
@@ -125,13 +151,18 @@ class SupabaseService {
 
   // --- Student Progress & Answers ---
   Future<List<StudentProgress>> getStudentProgress(String studentId) async {
-    final response = await _supabase
-        .from('student_progress')
-        .select('*, lessons(title)')
-        .eq('student_id', studentId);
-    return (response as List)
-        .map((json) => StudentProgress.fromJson(json))
-        .toList();
+    try {
+      final response = await _supabase
+          .from('student_progress')
+          .select('*, lessons(title)')
+          .eq('student_id', studentId);
+      return (response as List)
+          .map((json) => StudentProgress.fromJson(json))
+          .toList();
+    } catch (e) {
+      debugPrint('Error fetching student progress: $e');
+      return [];
+    }
   }
 
   Future<List<StudentAnswer>> getStudentAnswers(
@@ -174,50 +205,65 @@ class SupabaseService {
   }
 
   Future<Map<String, int>> getLessonCompletionCounts() async {
-    final response = await _supabase
-        .from('student_progress')
-        .select('lesson_id');
-    final Map<String, int> counts = {};
-    for (var row in (response as List)) {
-      final lessonId = row['lesson_id'] as String;
-      counts[lessonId] = (counts[lessonId] ?? 0) + 1;
+    try {
+      final response = await _supabase
+          .from('student_progress')
+          .select('lesson_id');
+      final Map<String, int> counts = {};
+      for (var row in (response as List)) {
+        final lessonId = row['lesson_id'] as String;
+        counts[lessonId] = (counts[lessonId] ?? 0) + 1;
+      }
+      return counts;
+    } catch (e) {
+      debugPrint('Error fetching completion counts: $e');
+      return {};
     }
-    return counts;
   }
 
   Future<Map<DateTime, int>> getCompletionTrend() async {
-    final response = await _supabase
-        .from('student_progress')
-        .select('completed_at');
-    final Map<DateTime, int> trend = {};
-    for (var row in (response as List)) {
-      final date = DateTime.parse(row['completed_at']).toLocal();
-      final day = DateTime(date.year, date.month, date.day);
-      trend[day] = (trend[day] ?? 0) + 1;
+    try {
+      final response = await _supabase
+          .from('student_progress')
+          .select('completed_at');
+      final Map<DateTime, int> trend = {};
+      for (var row in (response as List)) {
+        final date = DateTime.parse(row['completed_at']).toLocal();
+        final day = DateTime(date.year, date.month, date.day);
+        trend[day] = (trend[day] ?? 0) + 1;
+      }
+      return trend;
+    } catch (e) {
+      debugPrint('Error fetching completion trend: $e');
+      return {};
     }
-    return trend;
   }
 
   Future<List<Profile>> getStudentsWhoSolvedLesson(String lessonId) async {
-    final progressResponse = await _supabase
-        .from('student_progress')
-        .select('student_id')
-        .eq('lesson_id', lessonId);
+    try {
+      final progressResponse = await _supabase
+          .from('student_progress')
+          .select('student_id')
+          .eq('lesson_id', lessonId);
 
-    final studentIds = (progressResponse as List)
-        .map((row) => row['student_id'] as String)
-        .toList();
+      final studentIds = (progressResponse as List)
+          .map((row) => row['student_id'] as String)
+          .toList();
 
-    if (studentIds.isEmpty) return [];
+      if (studentIds.isEmpty) return [];
 
-    final profilesResponse = await _supabase
-        .from('profiles')
-        .select()
-        .inFilter('id', studentIds);
+      final profilesResponse = await _supabase
+          .from('profiles')
+          .select()
+          .inFilter('id', studentIds);
 
-    return (profilesResponse as List)
-        .map((json) => Profile.fromJson(json))
-        .toList();
+      return (profilesResponse as List)
+          .map((json) => Profile.fromJson(json))
+          .toList();
+    } catch (e) {
+      debugPrint('Error fetching students who solved lesson: $e');
+      return [];
+    }
   }
 
   Future<List<Profile>> getStudentsWhoAttemptedLesson(String lessonId) async {
@@ -293,14 +339,18 @@ class SupabaseService {
 
   // --- Chat ---
   Future<List<ChatMessage>> getMessagesWithStudent(String studentId) async {
-    final response = await _supabase
-        .from('messages')
-        .select()
-        .eq('sender_id', studentId)
-        .order('created_at', ascending: true);
-    return (response as List)
-        .map((json) => ChatMessage.fromJson(json))
-        .toList();
+    try {
+      final response = await _supabase
+          .from('messages')
+          .select()
+          .eq('sender_id', studentId);
+      return (response as List)
+          .map((json) => ChatMessage.fromJson(json))
+          .toList();
+    } catch (e) {
+      debugPrint('Error fetching messages: $e');
+      return [];
+    }
   }
 
   Future<void> sendMessage({
@@ -344,20 +394,22 @@ class SupabaseService {
 
   // Get last message for each student to build the chat list
   Future<Map<String, ChatMessage>> getLastMessages() async {
-    final response = await _supabase
-        .from('messages')
-        .select()
-        .order('created_at', ascending: false);
+    try {
+      final response = await _supabase.from('messages').select();
 
-    final Map<String, ChatMessage> lastMessages = {};
+      final Map<String, ChatMessage> lastMessages = {};
 
-    for (var json in (response as List)) {
-      final msg = ChatMessage.fromJson(json);
-      if (!lastMessages.containsKey(msg.senderId)) {
-        lastMessages[msg.senderId] = msg;
+      for (var json in (response as List)) {
+        final msg = ChatMessage.fromJson(json);
+        if (!lastMessages.containsKey(msg.senderId)) {
+          lastMessages[msg.senderId] = msg;
+        }
       }
+      return lastMessages;
+    } catch (e) {
+      debugPrint('Error fetching chat list: $e');
+      return {};
     }
-    return lastMessages;
   }
 
   Future<String?> uploadChatImage(File file) async {
@@ -387,7 +439,7 @@ class SupabaseService {
       query = query.eq('student_id', studentId);
     }
 
-    final response = await query.order('created_at', ascending: false);
+    final response = await query;
     return (response as List)
         .map((json) => StudentAnswer.fromJson(json))
         .toList();

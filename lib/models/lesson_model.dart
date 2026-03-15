@@ -20,7 +20,9 @@ class Lesson {
       id: json['id'],
       title: json['title'],
       description: json['description'],
-      createdAt: DateTime.parse(json['created_at']),
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'])
+          : DateTime.now(),
       showCorrection: json['show_correction'] ?? true,
       durationMinutes: json['duration_minutes'],
     );

@@ -19,7 +19,9 @@ class Profile {
       fullName: json['full_name'],
       username: json['username'],
       accessKey: json['access_key'],
-      updatedAt: DateTime.parse(json['updated_at']),
+      updatedAt: DateTime.parse(
+        json['updated_at'] ?? DateTime.now().toIso8601String(),
+      ),
     );
   }
 

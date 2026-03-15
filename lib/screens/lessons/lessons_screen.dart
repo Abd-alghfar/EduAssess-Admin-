@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import '../../providers/admin_provider.dart';
+import '../../providers/teacher_provider.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'add_lesson_dialog.dart';
 import '../questions/questions_list_screen.dart';
@@ -21,13 +21,13 @@ class _LessonsScreenState extends State<LessonsScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AdminProvider>().fetchLessons();
+      context.read<TeacherProvider>().fetchLessons();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<AdminProvider>();
+    final provider = context.watch<TeacherProvider>();
     final scheme = Theme.of(context).colorScheme;
     final bottomInset = MediaQuery.of(context).viewPadding.bottom + 100;
 
@@ -111,7 +111,7 @@ class _LessonsScreenState extends State<LessonsScreen> {
   Widget _buildLessonCard(
     Lesson lesson,
     ColorScheme scheme,
-    AdminProvider provider,
+    TeacherProvider provider,
   ) {
     final completionCount = provider.lessonCompletionCounts[lesson.id] ?? 0;
     final successRate = provider.lessonSuccessRates[lesson.id] ?? 0.0;
@@ -313,7 +313,7 @@ class _LessonsScreenState extends State<LessonsScreen> {
           ),
           FilledButton(
             onPressed: () {
-              context.read<AdminProvider>().deleteLesson(id);
+              context.read<TeacherProvider>().deleteLesson(id);
               Navigator.pop(context);
             },
             style: FilledButton.styleFrom(backgroundColor: Colors.redAccent),

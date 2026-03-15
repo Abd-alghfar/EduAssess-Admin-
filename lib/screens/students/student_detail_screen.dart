@@ -4,7 +4,7 @@ import '../../models/student_progress_model.dart';
 import '../../services/supabase_service.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
-import '../../providers/admin_provider.dart';
+import '../../providers/teacher_provider.dart';
 import 'student_answers_screen.dart';
 import '../../models/lesson_model.dart';
 import '../../widgets/incorrect_answers_list.dart';
@@ -77,7 +77,7 @@ class _StudentDetailScreenState extends State<StudentDetailScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    Consumer<AdminProvider>(
+                    Consumer<TeacherProvider>(
                       builder: (context, adminProvider, child) {
                         final lessons = adminProvider.lessons;
                         if (lessons.isEmpty) {

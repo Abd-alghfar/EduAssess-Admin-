@@ -32,7 +32,9 @@ class StudentAnswer {
       answerValue: json['answer_value'],
       isCorrect: json['is_correct'] ?? false,
       scoreAttained: json['score_attained'] ?? 0,
-      createdAt: DateTime.parse(json['created_at']),
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'])
+          : DateTime.now(),
       question: json['questions'] != null
           ? Question.fromJson(json['questions'])
           : null,

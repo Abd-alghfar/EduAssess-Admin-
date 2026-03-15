@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'auth/login_screen.dart';
 import 'dashboard_screen.dart';
 import 'students/students_screen.dart';
 import 'lessons/lessons_screen.dart';
@@ -124,7 +126,7 @@ class _MainScreenState extends State<MainScreen> {
                         extended: true,
                         backgroundColor: Colors.transparent,
                         unselectedIconTheme: IconThemeData(
-                          color: scheme.onSurfaceVariant.withValues(alpha: 0.7),
+                          color: scheme.onSurfaceVariant.withOpacity(0.7),
                           size: 20,
                         ),
                         selectedIconTheme: IconThemeData(
@@ -132,7 +134,7 @@ class _MainScreenState extends State<MainScreen> {
                           size: 22,
                         ),
                         unselectedLabelTextStyle: GoogleFonts.plusJakartaSans(
-                          color: scheme.onSurfaceVariant.withValues(alpha: 0.7),
+                          color: scheme.onSurfaceVariant.withOpacity(0.7),
                           fontWeight: FontWeight.w700,
                           fontSize: 14,
                         ),
@@ -163,6 +165,32 @@ class _MainScreenState extends State<MainScreen> {
                             label: Text('Messages'),
                           ),
                         ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: OutlinedButton.icon(
+                        onPressed: () async {
+                          final prefs = await SharedPreferences.getInstance();
+                          await prefs.clear();
+                          if (mounted) {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const LoginScreen(),
+                              ),
+                            );
+                          }
+                        },
+                        icon: const Icon(Icons.logout_rounded, size: 18),
+                        label: const Text('Logout'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.redAccent,
+                          side: const BorderSide(
+                            color: Colors.redAccent,
+                            width: 1,
+                          ),
+                        ),
                       ),
                     ),
                   ],

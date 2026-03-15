@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../providers/admin_provider.dart';
+import '../providers/teacher_provider.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'students/add_student_dialog.dart';
 import 'lessons/add_lesson_dialog.dart';
 import 'questions/questions_list_screen.dart';
 import '../models/lesson_model.dart';
@@ -23,19 +22,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AdminProvider>().fetchStudents();
-      context.read<AdminProvider>().fetchLessons();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final provider = context.read<TeacherProvider>();
+      await provider.fetchAssignments();
+      await provider.fetchStudents();
+      await provider.fetchLessons();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<AdminProvider>();
+    final provider = context.watch<TeacherProvider>();
     final scheme = Theme.of(context).colorScheme;
     final bottomInset = MediaQuery.of(context).viewPadding.bottom + 100;
 
-    if (provider.isLoading && provider.students.isEmpty) {
+    if (provider.isLoading && provider.assignments.isEmpty) {
       return const Scaffold(
         backgroundColor: Colors.transparent,
         body: DashboardShimmer(),
@@ -46,8 +47,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       backgroundColor: Colors.transparent,
       body: RefreshIndicator(
         onRefresh: () async {
-          await context.read<AdminProvider>().fetchStudents();
-          await context.read<AdminProvider>().fetchLessons();
+          await provider.fetchAssignments();
+          await provider.fetchStudents();
+          await provider.fetchLessons();
         },
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -55,13 +57,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildModernHeader(scheme),
+              _buildModernHeader(scheme, provider),
+              const SizedBox(height: 32),
+              _buildAssignmentSelector(provider, scheme),
               const SizedBox(height: 32),
               Row(
                 children: [
                   _buildStatCard(
                     context,
-                    'Total Students',
+                    'Students in Class',
                     provider.students.length.toString(),
                     FontAwesomeIcons.users,
                     scheme.primary,
@@ -110,19 +114,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 physics: const BouncingScrollPhysics(),
                 child: Row(
                   children: [
-                    _buildActionCard(
-                      context,
-                      'Add Student',
-                      FontAwesomeIcons.userPlus,
-                      scheme.primary,
-                      () {
-                        showDialog(
-                          context: context,
-                          builder: (context) => const AddStudentDialog(),
-                        );
-                      },
-                    ),
-                    const SizedBox(width: 16),
                     _buildActionCard(
                       context,
                       'New Quiz',
@@ -196,7 +187,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ],
               ),
               const SizedBox(height: 12),
-              Consumer<AdminProvider>(
+              Consumer<TeacherProvider>(
                 builder: (context, adminProvider, child) {
                   final lessons = adminProvider.lessons;
                   final rates = adminProvider.lessonSuccessRates;
@@ -250,7 +241,129 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildModernHeader(ColorScheme scheme) {
+  Widget _buildAssignmentSelector(
+    TeacherProvider provider,
+    ColorScheme scheme,
+  ) {
+    if (provider.assignments.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'My Classes & Subjects',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                color: scheme.onSurface,
+              ),
+            ),
+            if (provider.assignments.length > 1)
+              const Text(
+                'Swipe to switch',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.indigo,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        SizedBox(
+          height: 100,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            itemCount: provider.assignments.length,
+            itemBuilder: (context, index) {
+              final ass = provider.assignments[index];
+              final isSelected = provider.currentAssignment?['id'] == ass['id'];
+              final subjectName = ass['subjects']?['name'] ?? 'Unknown Subject';
+              final className = ass['classes']?['name'] ?? 'Unknown Class';
+
+              return GestureDetector(
+                onTap: () => provider.setCurrentAssignment(ass),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  width: 220,
+                  margin: const EdgeInsets.only(right: 16),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: isSelected ? scheme.primary : Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: isSelected
+                          ? scheme.primary
+                          : scheme.outlineVariant,
+                      width: 2,
+                    ),
+                    boxShadow: isSelected
+                        ? [
+                            BoxShadow(
+                              color: scheme.primary.withOpacity(0.2),
+                              blurRadius: 12,
+                              offset: const Offset(0, 6),
+                            ),
+                          ]
+                        : [],
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        subjectName,
+                        style: GoogleFonts.plusJakartaSans(
+                          color: isSelected ? Colors.white : scheme.onSurface,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 15,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.groups_rounded,
+                            size: 14,
+                            color: isSelected
+                                ? Colors.white.withOpacity(0.8)
+                                : scheme.onSurfaceVariant,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            className,
+                            style: GoogleFonts.plusJakartaSans(
+                              color: isSelected
+                                  ? Colors.white.withOpacity(0.8)
+                                  : scheme.onSurfaceVariant,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildModernHeader(ColorScheme scheme, TeacherProvider provider) {
+    final assignment = provider.currentAssignment;
+    final subject = assignment?['subjects']?['name'] ?? "Teacher Dashboard";
+    final className = assignment?['classes']?['name'] ?? "Manage your studio";
+
     return Container(
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
@@ -265,7 +378,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         boxShadow: [
           BoxShadow(
-            color: scheme.primary.withValues(alpha: 0.3),
+            color: scheme.primary.withOpacity(0.3),
             blurRadius: 24,
             offset: const Offset(0, 12),
           ),
@@ -278,19 +391,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Dashboard',
+                  subject,
                   style: GoogleFonts.plusJakartaSans(
                     color: Colors.white,
-                    fontSize: 32,
+                    fontSize: 28,
                     fontWeight: FontWeight.w900,
                     letterSpacing: -1,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'EduAssess Management System',
+                  className,
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.7),
+                    color: Colors.white.withOpacity(0.7),
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
@@ -301,7 +416,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
+              color: Colors.white.withOpacity(0.2),
               borderRadius: BorderRadius.circular(20),
             ),
             child: const Icon(
