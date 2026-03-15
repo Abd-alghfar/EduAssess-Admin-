@@ -187,6 +187,27 @@ class _LessonsScreenState extends State<LessonsScreen> {
                             ],
                           ),
                         ],
+                        if (lesson.expiresAt != null) ...[
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.timer_off_outlined,
+                                size: 14,
+                                color: Colors.orange.shade700,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Ends: ${lesson.expiresAt!.day}/${lesson.expiresAt!.month} ${lesson.expiresAt!.hour}:${lesson.expiresAt!.minute.toString().padLeft(2, '0')}',
+                                style: TextStyle(
+                                  color: Colors.orange.shade800,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ],
                     ),
                   ),

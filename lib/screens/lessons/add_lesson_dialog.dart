@@ -22,6 +22,7 @@ class _AddLessonDialogState extends State<AddLessonDialog> {
   bool _shuffleQuestions = true;
   bool _isPublished = false;
   DateTime? _scheduledAt;
+  DateTime? _expiresAt;
 
   @override
   void initState() {
@@ -31,6 +32,7 @@ class _AddLessonDialogState extends State<AddLessonDialog> {
     _shuffleQuestions = widget.lesson?.shuffleQuestions ?? true;
     _isPublished = widget.lesson?.isPublished ?? false;
     _scheduledAt = widget.lesson?.scheduledAt;
+    _expiresAt = widget.lesson?.expiresAt;
     _durationController = TextEditingController(
       text: widget.lesson?.durationMinutes?.toString() ?? '',
     );
@@ -60,6 +62,34 @@ class _AddLessonDialogState extends State<AddLessonDialog> {
 
     setState(() {
       _scheduledAt = DateTime(
+        date.year,
+        date.month,
+        date.day,
+        time.hour,
+        time.minute,
+      );
+    });
+  }
+
+  Future<void> _pickExpiryDateTime() async {
+    final date = await showDatePicker(
+      context: context,
+      initialDate: _expiresAt ?? _scheduledAt ?? DateTime.now(),
+      firstDate: DateTime.now().subtract(const Duration(days: 365)),
+      lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
+    );
+    if (date == null || !mounted) return;
+
+    final time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(
+        _expiresAt ?? _scheduledAt ?? DateTime.now(),
+      ),
+    );
+    if (time == null || !mounted) return;
+
+    setState(() {
+      _expiresAt = DateTime(
         date.year,
         date.month,
         date.day,
@@ -153,6 +183,45 @@ class _AddLessonDialogState extends State<AddLessonDialog> {
                 : null,
             onTap: _pickDateTime,
           ),
+          const SizedBox(height: 8),
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: Icon(
+              Icons.timer_off_outlined,
+              color: Colors.orange.shade700,
+            ),
+            title: const Text('Hide After (Deadline)'),
+            subtitle: Text(
+              _expiresAt == null
+                  ? 'Optionally set an end time'
+                  : '${_expiresAt!.day}/${_expiresAt!.month}/${_expiresAt!.year} at ${_expiresAt!.hour}:${_expiresAt!.minute.toString().padLeft(2, '0')}',
+            ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (_scheduledAt != null && _isTimerEnabled)
+                  IconButton(
+                    icon: const Icon(Icons.auto_fix_high, size: 20),
+                    tooltip: 'Set automatically (Start + Duration)',
+                    onPressed: () {
+                      final duration =
+                          int.tryParse(_durationController.text) ?? 0;
+                      setState(() {
+                        _expiresAt = _scheduledAt!.add(
+                          Duration(minutes: duration),
+                        );
+                      });
+                    },
+                  ),
+                if (_expiresAt != null)
+                  IconButton(
+                    icon: const Icon(Icons.clear, size: 20),
+                    onPressed: () => setState(() => _expiresAt = null),
+                  ),
+              ],
+            ),
+            onTap: _pickExpiryDateTime,
+          ),
           const SizedBox(height: 12),
           SwitchListTile(
             title: const Text('Shuffle Questions'),
@@ -217,6 +286,7 @@ class _AddLessonDialogState extends State<AddLessonDialog> {
           shuffleQuestions: _shuffleQuestions,
           isPublished: _isPublished,
           scheduledAt: _scheduledAt,
+          expiresAt: _expiresAt,
         );
         if (mounted) Navigator.pop(context, created);
       } else {
@@ -227,6 +297,7 @@ class _AddLessonDialogState extends State<AddLessonDialog> {
           shuffleQuestions: _shuffleQuestions,
           isPublished: _isPublished,
           scheduledAt: _scheduledAt,
+          expiresAt: _expiresAt,
         );
         if (mounted) Navigator.pop(context);
       }

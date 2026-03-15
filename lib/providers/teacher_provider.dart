@@ -113,6 +113,7 @@ class TeacherProvider with ChangeNotifier {
     bool shuffleQuestions = true,
     bool isPublished = false,
     DateTime? scheduledAt,
+    DateTime? expiresAt,
   }) async {
     final lesson = Lesson(
       id: '',
@@ -122,6 +123,7 @@ class TeacherProvider with ChangeNotifier {
       shuffleQuestions: shuffleQuestions,
       isPublished: isPublished,
       scheduledAt: scheduledAt,
+      expiresAt: expiresAt,
     );
     final created = await _service.createLesson(
       lesson,
@@ -138,6 +140,7 @@ class TeacherProvider with ChangeNotifier {
     bool shuffleQuestions = true,
     bool isPublished = false,
     DateTime? scheduledAt,
+    DateTime? expiresAt,
   }) async {
     final lesson = Lesson(
       id: id,
@@ -147,6 +150,7 @@ class TeacherProvider with ChangeNotifier {
       shuffleQuestions: shuffleQuestions,
       isPublished: isPublished,
       scheduledAt: scheduledAt,
+      expiresAt: expiresAt,
     );
     await _service.updateLesson(id, lesson);
     await fetchLessons();
