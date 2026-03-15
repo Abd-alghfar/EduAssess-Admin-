@@ -32,7 +32,6 @@ class _LessonsScreenState extends State<LessonsScreen> {
     final bottomInset = MediaQuery.of(context).viewPadding.bottom + 100;
 
     return Scaffold(
-      backgroundColor: Colors.transparent,
       body: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [

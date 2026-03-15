@@ -37,14 +37,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final bottomInset = MediaQuery.of(context).viewPadding.bottom + 100;
 
     if (provider.isLoading && provider.assignments.isEmpty) {
-      return const Scaffold(
-        backgroundColor: Colors.transparent,
-        body: DashboardShimmer(),
-      );
+      return const Scaffold(body: DashboardShimmer());
     }
 
     return Scaffold(
-      backgroundColor: Colors.transparent,
       body: RefreshIndicator(
         onRefresh: () async {
           await provider.fetchAssignments();
