@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import '../../providers/teacher_provider.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'student_detail_screen.dart';
-import '../chat/chat_room_screen.dart';
 import '../../widgets/shimmer_loader.dart';
 
 class StudentsScreen extends StatefulWidget {
@@ -138,22 +137,6 @@ class _StudentsScreenState extends State<StudentsScreen> {
                       ),
                     ),
                   ],
-                ),
-              ),
-              IconButton(
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ChatRoomScreen(student: student),
-                  ),
-                ),
-                icon: Icon(
-                  FontAwesomeIcons.commentDots,
-                  size: 18,
-                  color: scheme.primary,
-                ),
-                style: IconButton.styleFrom(
-                  backgroundColor: scheme.primary.withOpacity(0.05),
                 ),
               ),
             ],

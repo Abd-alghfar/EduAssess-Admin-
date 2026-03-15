@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -7,7 +6,6 @@ import '../models/profile_model.dart';
 import '../models/question_model.dart';
 import '../models/student_answer_model.dart';
 import '../models/student_progress_model.dart';
-import '../models/message_model.dart';
 
 class SupabaseService {
   final _supabase = Supabase.instance.client;
@@ -336,98 +334,6 @@ class SupabaseService {
     if (score != null) data['score_attained'] = score;
 
     await _supabase.from('student_answers').update(data).eq('id', answerId);
-  }
-
-  // --- Chat ---
-  Future<List<ChatMessage>> getMessagesWithStudent(String studentId) async {
-    try {
-      final response = await _supabase
-          .from('messages')
-          .select()
-          .eq('sender_id', studentId);
-      return (response as List)
-          .map((json) => ChatMessage.fromJson(json))
-          .toList();
-    } catch (e) {
-      debugPrint('Error fetching messages: $e');
-      return [];
-    }
-  }
-
-  Future<void> sendMessage({
-    required String studentId,
-    String? content,
-    String? imageUrl,
-  }) async {
-    final prefix = '[TEACHER]\n';
-    await _supabase.from('messages').insert({
-      'sender_id': studentId,
-      'content': content != null && content.isNotEmpty
-          ? '$prefix$content'
-          : prefix,
-      'image_url': imageUrl,
-      'is_read': false,
-    });
-  }
-
-  Future<void> updateMessage(String messageId, String content) async {
-    await _supabase
-        .from('messages')
-        .update({'content': '[TEACHER]\n$content'})
-        .eq('id', messageId);
-  }
-
-  Future<void> deleteMessage(String messageId) async {
-    await _supabase.from('messages').delete().eq('id', messageId);
-  }
-
-  Future<void> markAsRead(String studentId) async {
-    final messages = await getMessagesWithStudent(studentId);
-    for (final msg in messages) {
-      if (!msg.isFromTeacher && !msg.isRead) {
-        await _supabase
-            .from('messages')
-            .update({'is_read': true})
-            .eq('id', msg.id);
-      }
-    }
-  }
-
-  // Get last message for each student to build the chat list
-  Future<Map<String, ChatMessage>> getLastMessages() async {
-    try {
-      final response = await _supabase.from('messages').select();
-
-      final Map<String, ChatMessage> lastMessages = {};
-
-      for (var json in (response as List)) {
-        final msg = ChatMessage.fromJson(json);
-        if (!lastMessages.containsKey(msg.senderId)) {
-          lastMessages[msg.senderId] = msg;
-        }
-      }
-      return lastMessages;
-    } catch (e) {
-      debugPrint('Error fetching chat list: $e');
-      return {};
-    }
-  }
-
-  Future<String?> uploadChatImage(File file) async {
-    try {
-      final fileName = 'chat_${DateTime.now().millisecondsSinceEpoch}.jpg';
-      final path = fileName; // Simplified path
-
-      // Attempt to upload to 'chat_images' bucket
-      await _supabase.storage.from('chat_images').upload(path, file);
-
-      final imageUrl = _supabase.storage.from('chat_images').getPublicUrl(path);
-      debugPrint('Generated Image URL: $imageUrl');
-      return imageUrl;
-    } catch (e) {
-      debugPrint('Error uploading image to Supabase: $e');
-      return null;
-    }
   }
 
   Future<List<StudentAnswer>> getIncorrectAnswers({String? studentId}) async {

@@ -5,7 +5,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'core/constants.dart';
 import 'providers/teacher_provider.dart';
-import 'providers/chat_provider.dart';
 import 'providers/connectivity_provider.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/main_screen.dart';
@@ -22,7 +21,6 @@ void main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => TeacherProvider()),
-        ChangeNotifierProvider(create: (_) => ChatProvider()),
         ChangeNotifierProvider(create: (_) => ConnectivityProvider()),
       ],
       child: const MyApp(),

@@ -6,7 +6,6 @@ import 'auth/login_screen.dart';
 import 'dashboard_screen.dart';
 import 'students/students_screen.dart';
 import 'lessons/lessons_screen.dart';
-import 'chat/chat_list_screen.dart';
 import 'reports/reports_screen.dart';
 
 class MainScreen extends StatefulWidget {
@@ -24,7 +23,6 @@ class _MainScreenState extends State<MainScreen> {
     const StudentsScreen(),
     const LessonsScreen(),
     const ReportsScreen(),
-    const ChatListScreen(),
   ];
 
   @override
@@ -154,15 +152,11 @@ class _MainScreenState extends State<MainScreen> {
                           ),
                           NavigationRailDestination(
                             icon: Icon(FontAwesomeIcons.book),
-                            label: Text('Assessments'),
+                            label: Text('Exams'),
                           ),
                           NavigationRailDestination(
                             icon: Icon(FontAwesomeIcons.chartBar),
                             label: Text('Reports'),
-                          ),
-                          NavigationRailDestination(
-                            icon: Icon(FontAwesomeIcons.commentDots),
-                            label: Text('Messages'),
                           ),
                         ],
                       ),
@@ -270,13 +264,6 @@ class _MainScreenState extends State<MainScreen> {
                             NavigationDestination(
                               icon: Icon(FontAwesomeIcons.chartBar, size: 20),
                               label: 'Reports',
-                            ),
-                            NavigationDestination(
-                              icon: Icon(
-                                FontAwesomeIcons.commentDots,
-                                size: 20,
-                              ),
-                              label: 'Chat',
                             ),
                           ],
                         ),
