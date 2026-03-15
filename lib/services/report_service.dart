@@ -83,7 +83,7 @@ class ReportService {
               ],
               data: answers.map((ans) {
                 return [
-                  ans.createdAt.toString().split(' ').first,
+                  ans.createdAt?.toString().split(' ').first ?? 'N/A',
                   ans.student?.fullName ?? 'N/A',
                   ans.question?.lesson?.title ?? 'N/A',
                   ans.question?.questionText ?? 'N/A',

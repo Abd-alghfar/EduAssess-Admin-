@@ -136,10 +136,11 @@ class _IncorrectAnswersListState extends State<IncorrectAnswersList> {
             itemCount: incorrect.length,
             itemBuilder: (context, index) {
               final answer = incorrect[index];
+              final studentId = answer.studentId ?? widget.studentId ?? '';
               final studentFallback = provider.students.firstWhere(
-                (s) => s.id == answer.studentId,
+                (s) => s.id == studentId,
                 orElse: () => Profile(
-                  id: answer.studentId,
+                  id: studentId,
                   fullName: 'Unknown Student',
                   username: '',
                   accessKey: '',
@@ -191,7 +192,8 @@ class _IncorrectAnswersListState extends State<IncorrectAnswersList> {
                             ),
                           ),
                           Text(
-                            answer.createdAt.toString().split(' ').first,
+                            answer.createdAt?.toString().split(' ').first ??
+                                'N/A',
                             style: GoogleFonts.plusJakartaSans(
                               color: const Color(0xFF94A3B8),
                               fontSize: 11,

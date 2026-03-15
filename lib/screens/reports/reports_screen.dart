@@ -83,7 +83,10 @@ class StudentPerformanceTab extends StatelessWidget {
 
     final Map<String, int> mistakeCounts = {};
     for (final ans in incorrect) {
-      mistakeCounts[ans.studentId] = (mistakeCounts[ans.studentId] ?? 0) + 1;
+      final sId = ans.studentId;
+      if (sId != null) {
+        mistakeCounts[sId] = (mistakeCounts[sId] ?? 0) + 1;
+      }
     }
 
     if (provider.isLoading && students.isEmpty) {

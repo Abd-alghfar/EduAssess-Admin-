@@ -109,17 +109,17 @@ class TeacherProvider with ChangeNotifier {
 
   Future<Lesson> addLesson(
     String title,
-    String description,
-    int? durationMinutes,
-    bool showCorrection,
-  ) async {
+    int? durationMinutes, {
+    bool shuffleQuestions = true,
+    bool isPublished = false,
+  }) async {
     final lesson = Lesson(
       id: '',
       title: title,
-      description: description,
       createdAt: DateTime.now(),
-      showCorrection: showCorrection,
       durationMinutes: durationMinutes,
+      shuffleQuestions: shuffleQuestions,
+      isPublished: isPublished,
     );
     final created = await _service.createLesson(
       lesson,
@@ -132,17 +132,17 @@ class TeacherProvider with ChangeNotifier {
   Future<void> updateLesson(
     String id,
     String title,
-    String description,
-    int? durationMinutes,
-    bool showCorrection,
-  ) async {
+    int? durationMinutes, {
+    bool shuffleQuestions = true,
+    bool isPublished = false,
+  }) async {
     final lesson = Lesson(
       id: id,
       title: title,
-      description: description,
       createdAt: DateTime.now(),
-      showCorrection: showCorrection,
       durationMinutes: durationMinutes,
+      shuffleQuestions: shuffleQuestions,
+      isPublished: isPublished,
     );
     await _service.updateLesson(id, lesson);
     await fetchLessons();

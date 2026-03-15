@@ -16,21 +16,19 @@ class AddLessonDialog extends StatefulWidget {
 class _AddLessonDialogState extends State<AddLessonDialog> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _titleController;
-  late TextEditingController _descController;
   late TextEditingController _durationController;
   bool _isLoading = false;
   bool _isTimerEnabled = false;
-  bool _showCorrection = true;
+  bool _shuffleQuestions = true;
+  bool _isPublished = false;
 
   @override
   void initState() {
     super.initState();
     _titleController = TextEditingController(text: widget.lesson?.title ?? '');
-    _descController = TextEditingController(
-      text: widget.lesson?.description ?? '',
-    );
     _isTimerEnabled = widget.lesson?.durationMinutes != null;
-    _showCorrection = widget.lesson?.showCorrection ?? true;
+    _shuffleQuestions = widget.lesson?.shuffleQuestions ?? true;
+    _isPublished = widget.lesson?.isPublished ?? false;
     _durationController = TextEditingController(
       text: widget.lesson?.durationMinutes?.toString() ?? '',
     );
@@ -39,7 +37,6 @@ class _AddLessonDialogState extends State<AddLessonDialog> {
   @override
   void dispose() {
     _titleController.dispose();
-    _descController.dispose();
     _durationController.dispose();
     super.dispose();
   }
@@ -78,15 +75,6 @@ class _AddLessonDialogState extends State<AddLessonDialog> {
             validator: (v) => v!.isEmpty ? 'Required' : null,
           ),
           const SizedBox(height: 16),
-          TextFormField(
-            controller: _descController,
-            decoration: const InputDecoration(
-              labelText: 'Overview',
-              border: OutlineInputBorder(),
-            ),
-            maxLines: 3,
-          ),
-          const SizedBox(height: 16),
           SwitchListTile(
             title: const Text('Enable Timer'),
             value: _isTimerEnabled,
@@ -120,16 +108,19 @@ class _AddLessonDialogState extends State<AddLessonDialog> {
           ],
           const SizedBox(height: 16),
           SwitchListTile(
-            title: const Text('Show answers to students'),
+            title: const Text('Shuffle Questions'),
             subtitle: const Text(
-              'If enabled, students will see the correct answers after finishing',
+              'Randomize the order of questions for students',
             ),
-            value: _showCorrection,
-            onChanged: (val) {
-              setState(() {
-                _showCorrection = val;
-              });
-            },
+            value: _shuffleQuestions,
+            onChanged: (val) => setState(() => _shuffleQuestions = val),
+          ),
+          const SizedBox(height: 12),
+          SwitchListTile(
+            title: const Text('Publish Exam'),
+            subtitle: const Text('Make this exam visible to students'),
+            value: _isPublished,
+            onChanged: (val) => setState(() => _isPublished = val),
           ),
         ],
       ),
@@ -175,18 +166,18 @@ class _AddLessonDialogState extends State<AddLessonDialog> {
       if (widget.lesson == null) {
         final created = await context.read<TeacherProvider>().addLesson(
           _titleController.text,
-          _descController.text,
           duration,
-          _showCorrection,
+          shuffleQuestions: _shuffleQuestions,
+          isPublished: _isPublished,
         );
         if (mounted) Navigator.pop(context, created);
       } else {
         await context.read<TeacherProvider>().updateLesson(
           widget.lesson!.id,
           _titleController.text,
-          _descController.text,
           duration,
-          _showCorrection,
+          shuffleQuestions: _shuffleQuestions,
+          isPublished: _isPublished,
         );
         if (mounted) Navigator.pop(context);
       }

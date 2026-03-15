@@ -1,39 +1,43 @@
 class Lesson {
   final String id;
+  final String? assignmentId;
   final String title;
-  final String? description;
-  final DateTime createdAt;
-  final bool showCorrection;
   final int? durationMinutes;
+  final bool shuffleQuestions;
+  final bool isPublished;
+  final DateTime createdAt;
 
   Lesson({
     required this.id,
+    this.assignmentId,
     required this.title,
-    this.description,
-    required this.createdAt,
-    this.showCorrection = true,
     this.durationMinutes,
+    this.shuffleQuestions = true,
+    this.isPublished = false,
+    required this.createdAt,
   });
 
   factory Lesson.fromJson(Map<String, dynamic> json) {
     return Lesson(
       id: json['id'],
+      assignmentId: json['assignment_id'],
       title: json['title'],
-      description: json['description'],
-      createdAt: json['created_at'] != null
-          ? DateTime.parse(json['created_at'])
-          : DateTime.now(),
-      showCorrection: json['show_correction'] ?? true,
       durationMinutes: json['duration_minutes'],
+      shuffleQuestions: json['shuffle_questions'] ?? true,
+      isPublished: json['is_published'] ?? false,
+      createdAt: json['created_at'] != null 
+          ? DateTime.parse(json['created_at']) 
+          : DateTime.now(),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
+      'assignment_id': assignmentId,
       'title': title,
-      'description': description,
-      'show_correction': showCorrection,
       'duration_minutes': durationMinutes,
+      'shuffle_questions': shuffleQuestions,
+      'is_published': isPublished,
     };
   }
 }

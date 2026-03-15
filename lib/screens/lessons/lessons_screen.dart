@@ -161,7 +161,7 @@ class _LessonsScreenState extends State<LessonsScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          lesson.description ?? 'No description provided',
+                          'Assessment created on: ${lesson.createdAt.toString().split(' ').first}',
                           style: TextStyle(
                             color: scheme.onSurfaceVariant,
                             fontSize: 13,

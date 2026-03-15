@@ -74,7 +74,7 @@ class _StudentAnswersScreenState extends State<StudentAnswersScreen> {
 
   void _showEditDialog(StudentAnswer ans) {
     final scoreController = TextEditingController(
-      text: ans.scoreAttained.toString(),
+      text: ans.pointsEarned.toString(),
     );
     final answerController = TextEditingController(
       text: ans.answerValue?.toString() ?? "",
@@ -258,7 +258,7 @@ class _StudentAnswersScreenState extends State<StudentAnswersScreen> {
                                     ),
                                   ),
                                   child: Text(
-                                    'Score: ${ans.scoreAttained} / ${ans.question?.points ?? 0}',
+                                    'Score: ${ans.pointsEarned} / ${ans.question?.points ?? 0}',
                                     style: TextStyle(
                                       color: Colors.blue.shade900,
                                       fontWeight: FontWeight.bold,

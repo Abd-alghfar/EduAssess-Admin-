@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/profile_model.dart';
-import '../../models/student_progress_model.dart';
+import '../../models/exam_attempt_model.dart';
 import '../../services/supabase_service.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
@@ -19,7 +19,7 @@ class StudentDetailScreen extends StatefulWidget {
 
 class _StudentDetailScreenState extends State<StudentDetailScreen> {
   final SupabaseService _service = SupabaseService();
-  List<StudentProgress> _progress = [];
+  List<ExamAttempt> _progress = [];
   bool _isLoading = true;
 
   @override
@@ -142,10 +142,10 @@ class _StudentDetailScreenState extends State<StudentDetailScreen> {
                                     ),
                                   ),
                                   subtitle: Text(
-                                    'Completed on: ${p.completedAt.toString().split(' ').first}',
+                                    'Completed on: ${p.completedAt?.toString().split(' ').first ?? 'In Progress'}',
                                   ),
                                   trailing: Text(
-                                    'Score: ${p.totalScore}',
+                                    'Score: ${p.score}',
                                     style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 16,

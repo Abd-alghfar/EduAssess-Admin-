@@ -5,7 +5,7 @@ import '../models/lesson_model.dart';
 import '../models/profile_model.dart';
 import '../models/question_model.dart';
 import '../models/student_answer_model.dart';
-import '../models/student_progress_model.dart';
+import '../models/exam_attempt_model.dart';
 
 class SupabaseService {
   final _supabase = Supabase.instance.client;
@@ -148,15 +148,15 @@ class SupabaseService {
     await _supabase.from('questions').delete().eq('id', id);
   }
 
-  // --- Student Progress & Answers ---
-  Future<List<StudentProgress>> getStudentProgress(String studentId) async {
+  // --- Exam Attempts (formerly Student Progress) ---
+  Future<List<ExamAttempt>> getStudentProgress(String studentId) async {
     try {
       final response = await _supabase
-          .from('student_progress')
+          .from('exam_attempts')
           .select('*, lessons(title)')
           .eq('student_id', studentId);
       return (response as List)
-          .map((json) => StudentProgress.fromJson(json))
+          .map((json) => ExamAttempt.fromJson(json))
           .toList();
     } catch (e) {
       debugPrint('Error fetching student progress: $e');
@@ -177,8 +177,8 @@ class SupabaseService {
     // 2. Get the student's answers for these questions
     final response = await _supabase
         .from('student_answers')
-        .select()
-        .eq('student_id', studentId)
+        .select('*, exam_attempts!inner(*)')
+        .eq('exam_attempts.student_id', studentId)
         .inFilter('question_id', questionIds);
 
     final List<StudentAnswer> answers = [];
@@ -189,12 +189,11 @@ class SupabaseService {
       answers.add(
         StudentAnswer(
           id: answer.id,
-          studentId: answer.studentId,
+          attemptId: answer.attemptId,
           questionId: answer.questionId,
           answerValue: answer.answerValue,
           isCorrect: answer.isCorrect,
-          scoreAttained: answer.scoreAttained,
-          createdAt: answer.createdAt,
+          pointsEarned: answer.pointsEarned,
           question: question,
         ),
       );
@@ -206,8 +205,9 @@ class SupabaseService {
   Future<Map<String, int>> getLessonCompletionCounts() async {
     try {
       final response = await _supabase
-          .from('student_progress')
-          .select('lesson_id');
+          .from('exam_attempts')
+          .select('lesson_id')
+          .eq('is_completed', true);
       final Map<String, int> counts = {};
       for (var row in (response as List)) {
         final lessonId = row['lesson_id'] as String;
@@ -223,8 +223,10 @@ class SupabaseService {
   Future<Map<DateTime, int>> getCompletionTrend() async {
     try {
       final response = await _supabase
-          .from('student_progress')
-          .select('completed_at');
+          .from('exam_attempts')
+          .select('completed_at')
+          .eq('is_completed', true)
+          .not('completed_at', 'is', null);
       final Map<DateTime, int> trend = {};
       for (var row in (response as List)) {
         final date = DateTime.parse(row['completed_at']).toLocal();
@@ -241,9 +243,10 @@ class SupabaseService {
   Future<List<Profile>> getStudentsWhoSolvedLesson(String lessonId) async {
     try {
       final progressResponse = await _supabase
-          .from('student_progress')
+          .from('exam_attempts')
           .select('student_id')
-          .eq('lesson_id', lessonId);
+          .eq('lesson_id', lessonId)
+          .eq('is_completed', true);
 
       final studentIds = (progressResponse as List)
           .map((row) => row['student_id'] as String)
@@ -272,11 +275,12 @@ class SupabaseService {
     final questionIds = questions.map((q) => q.id).toList();
     final answersResponse = await _supabase
         .from('student_answers')
-        .select('student_id')
+        .select('exam_attempts(student_id)')
         .inFilter('question_id', questionIds);
 
     final studentIds = (answersResponse as List)
-        .map((row) => row['student_id'] as String)
+        .where((row) => row['exam_attempts'] != null)
+        .map((row) => row['exam_attempts']['student_id'] as String)
         .toSet()
         .toList();
 
@@ -311,12 +315,11 @@ class SupabaseService {
       final question = questions.firstWhere((q) => q.id == answer.questionId);
       return StudentAnswer(
         id: answer.id,
-        studentId: answer.studentId,
+        attemptId: answer.attemptId,
         questionId: answer.questionId,
         answerValue: answer.answerValue,
         isCorrect: answer.isCorrect,
-        scoreAttained: answer.scoreAttained,
-        createdAt: answer.createdAt,
+        pointsEarned: answer.pointsEarned,
         question: question,
       );
     }).toList();
@@ -329,9 +332,9 @@ class SupabaseService {
     int? score,
   }) async {
     final Map<String, dynamic> data = {};
-    if (answerValue != null) data['answer_value'] = answerValue;
+    if (answerValue != null) data['student_answer'] = answerValue;
     if (isCorrect != null) data['is_correct'] = isCorrect;
-    if (score != null) data['score_attained'] = score;
+    if (score != null) data['points_earned'] = score;
 
     await _supabase.from('student_answers').update(data).eq('id', answerId);
   }
@@ -339,11 +342,11 @@ class SupabaseService {
   Future<List<StudentAnswer>> getIncorrectAnswers({String? studentId}) async {
     var query = _supabase
         .from('student_answers')
-        .select('*, questions(*, lessons(*))')
+        .select('*, questions(*, lessons(*)), exam_attempts(profiles(*))')
         .eq('is_correct', false);
 
     if (studentId != null) {
-      query = query.eq('student_id', studentId);
+      query = query.eq('exam_attempts.student_id', studentId);
     }
 
     final response = await query;
