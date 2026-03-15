@@ -6,6 +6,7 @@ class Lesson {
   final bool shuffleQuestions;
   final bool isPublished;
   final DateTime createdAt;
+  final DateTime? scheduledAt;
 
   Lesson({
     required this.id,
@@ -15,6 +16,7 @@ class Lesson {
     this.shuffleQuestions = true,
     this.isPublished = false,
     required this.createdAt,
+    this.scheduledAt,
   });
 
   factory Lesson.fromJson(Map<String, dynamic> json) {
@@ -25,9 +27,12 @@ class Lesson {
       durationMinutes: json['duration_minutes'],
       shuffleQuestions: json['shuffle_questions'] ?? true,
       isPublished: json['is_published'] ?? false,
-      createdAt: json['created_at'] != null 
-          ? DateTime.parse(json['created_at']) 
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'])
           : DateTime.now(),
+      scheduledAt: json['scheduled_at'] != null
+          ? DateTime.parse(json['scheduled_at'])
+          : null,
     );
   }
 
@@ -38,6 +43,7 @@ class Lesson {
       'duration_minutes': durationMinutes,
       'shuffle_questions': shuffleQuestions,
       'is_published': isPublished,
+      'scheduled_at': scheduledAt?.toIso8601String(),
     };
   }
 }

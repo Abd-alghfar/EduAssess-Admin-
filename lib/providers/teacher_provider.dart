@@ -112,6 +112,7 @@ class TeacherProvider with ChangeNotifier {
     int? durationMinutes, {
     bool shuffleQuestions = true,
     bool isPublished = false,
+    DateTime? scheduledAt,
   }) async {
     final lesson = Lesson(
       id: '',
@@ -120,6 +121,7 @@ class TeacherProvider with ChangeNotifier {
       durationMinutes: durationMinutes,
       shuffleQuestions: shuffleQuestions,
       isPublished: isPublished,
+      scheduledAt: scheduledAt,
     );
     final created = await _service.createLesson(
       lesson,
@@ -135,6 +137,7 @@ class TeacherProvider with ChangeNotifier {
     int? durationMinutes, {
     bool shuffleQuestions = true,
     bool isPublished = false,
+    DateTime? scheduledAt,
   }) async {
     final lesson = Lesson(
       id: id,
@@ -143,6 +146,7 @@ class TeacherProvider with ChangeNotifier {
       durationMinutes: durationMinutes,
       shuffleQuestions: shuffleQuestions,
       isPublished: isPublished,
+      scheduledAt: scheduledAt,
     );
     await _service.updateLesson(id, lesson);
     await fetchLessons();

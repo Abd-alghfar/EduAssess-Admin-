@@ -160,15 +160,33 @@ class _LessonsScreenState extends State<LessonsScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Assessment created on: ${lesson.createdAt.toString().split(' ').first}',
+                          'Created: ${lesson.createdAt.toString().split(' ').first}',
                           style: TextStyle(
                             color: scheme.onSurfaceVariant,
-                            fontSize: 13,
-                            height: 1.4,
+                            fontSize: 12,
                           ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
                         ),
+                        if (lesson.scheduledAt != null) ...[
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.timer_outlined,
+                                size: 14,
+                                color: scheme.primary,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Scheduled: ${lesson.scheduledAt!.day}/${lesson.scheduledAt!.month} ${lesson.scheduledAt!.hour}:${lesson.scheduledAt!.minute.toString().padLeft(2, '0')}',
+                                style: TextStyle(
+                                  color: scheme.primary,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ],
                     ),
                   ),

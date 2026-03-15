@@ -21,6 +21,7 @@ class _AddLessonDialogState extends State<AddLessonDialog> {
   bool _isTimerEnabled = false;
   bool _shuffleQuestions = true;
   bool _isPublished = false;
+  DateTime? _scheduledAt;
 
   @override
   void initState() {
@@ -29,6 +30,7 @@ class _AddLessonDialogState extends State<AddLessonDialog> {
     _isTimerEnabled = widget.lesson?.durationMinutes != null;
     _shuffleQuestions = widget.lesson?.shuffleQuestions ?? true;
     _isPublished = widget.lesson?.isPublished ?? false;
+    _scheduledAt = widget.lesson?.scheduledAt;
     _durationController = TextEditingController(
       text: widget.lesson?.durationMinutes?.toString() ?? '',
     );
@@ -41,8 +43,35 @@ class _AddLessonDialogState extends State<AddLessonDialog> {
     super.dispose();
   }
 
+  Future<void> _pickDateTime() async {
+    final date = await showDatePicker(
+      context: context,
+      initialDate: _scheduledAt ?? DateTime.now(),
+      firstDate: DateTime.now().subtract(const Duration(days: 365)),
+      lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
+    );
+    if (date == null || !mounted) return;
+
+    final time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(_scheduledAt ?? DateTime.now()),
+    );
+    if (time == null || !mounted) return;
+
+    setState(() {
+      _scheduledAt = DateTime(
+        date.year,
+        date.month,
+        date.day,
+        time.hour,
+        time.minute,
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     final title = widget.lesson == null ? 'Create New Quiz' : 'Edit Quiz';
     final actions = [
       TextButton(
@@ -106,7 +135,25 @@ class _AddLessonDialogState extends State<AddLessonDialog> {
               },
             ),
           ],
-          const SizedBox(height: 16),
+          const Divider(height: 32),
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: Icon(Icons.calendar_today, color: scheme.primary),
+            title: const Text('Schedule Start (Optional)'),
+            subtitle: Text(
+              _scheduledAt == null
+                  ? 'Click to set date and time'
+                  : '${_scheduledAt!.day}/${_scheduledAt!.month}/${_scheduledAt!.year} at ${_scheduledAt!.hour}:${_scheduledAt!.minute.toString().padLeft(2, '0')}',
+            ),
+            trailing: _scheduledAt != null
+                ? IconButton(
+                    icon: const Icon(Icons.clear, size: 20),
+                    onPressed: () => setState(() => _scheduledAt = null),
+                  )
+                : null,
+            onTap: _pickDateTime,
+          ),
+          const SizedBox(height: 12),
           SwitchListTile(
             title: const Text('Shuffle Questions'),
             subtitle: const Text(
@@ -169,6 +216,7 @@ class _AddLessonDialogState extends State<AddLessonDialog> {
           duration,
           shuffleQuestions: _shuffleQuestions,
           isPublished: _isPublished,
+          scheduledAt: _scheduledAt,
         );
         if (mounted) Navigator.pop(context, created);
       } else {
@@ -178,6 +226,7 @@ class _AddLessonDialogState extends State<AddLessonDialog> {
           duration,
           shuffleQuestions: _shuffleQuestions,
           isPublished: _isPublished,
+          scheduledAt: _scheduledAt,
         );
         if (mounted) Navigator.pop(context);
       }
