@@ -24,7 +24,17 @@ abstract class Failure {
       }
       return 'حدث خطأ في عملية تسجيل الدخول. يرجى المحاولة لاحقاً.';
     } else if (error is PostgrestException) {
-      return 'عذراً، حدث خطأ أثناء جلب البيانات من الخادم. يرجى المحاولة مرة أخرى.';
+      final code = error.code ?? '';
+      if (code == '42501') {
+        return 'صلاحيات غير كافية (RLS). يرجى ضبط سياسات Supabase.';
+      }
+      if (code == '23503') {
+        return 'بيانات مرتبطة غير موجودة (Foreign Key).';
+      }
+      if (code == '23505') {
+        return 'بيانات مكررة بالفعل.';
+      }
+      return 'عذراً، حدث خطأ أثناء جلب البيانات من الخادم: ${error.message}';
     } else {
       // For any other unexpected errors, show a generic friendly message instead of a technical one
       return 'عذراً، حدث خطأ غير متوقع. نحن نعمل على إصلاحه، يرجى المحاولة لاحقاً.';

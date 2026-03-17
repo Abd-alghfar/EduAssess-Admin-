@@ -6,6 +6,7 @@ import '../models/profile_model.dart';
 import '../models/question_model.dart';
 import '../models/student_answer_model.dart';
 import '../models/exam_attempt_model.dart';
+import '../models/announcement_model.dart';
 
 class SupabaseService {
   final _supabase = Supabase.instance.client;
@@ -110,12 +111,18 @@ class SupabaseService {
     if (assignmentId != null) {
       data['assignment_id'] = assignmentId;
     }
-    final response = await _supabase
-        .from('lessons')
-        .insert(data)
-        .select()
-        .single();
-    return Lesson.fromJson(response);
+    try {
+      final response = await _supabase
+          .from('lessons')
+          .insert(data)
+          .select()
+          .single();
+      return Lesson.fromJson(response);
+    } on PostgrestException {
+      rethrow;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   Future<void> updateLesson(String id, Lesson lesson) async {
@@ -358,6 +365,19 @@ class SupabaseService {
     final response = await query;
     return (response as List)
         .map((json) => StudentAnswer.fromJson(json))
+        .toList();
+  }
+
+  // --- Announcements ---
+  Future<List<Announcement>> getAnnouncementsForRole(String role) async {
+    final response = await _supabase
+        .from('announcements')
+        .select()
+        .inFilter('target_role', ['all', role])
+        .eq('is_active', true)
+        .order('created_at', ascending: false);
+    return (response as List)
+        .map((json) => Announcement.fromJson(json))
         .toList();
   }
 }

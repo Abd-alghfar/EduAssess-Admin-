@@ -243,7 +243,13 @@ class _QuestionsListScreenState extends State<QuestionsListScreen> {
       case QuestionType.true_false:
         return 'TRUE / FALSE';
       case QuestionType.completion:
-        return 'ESSAY / WRITTEN';
+        return 'FILL IN BLANKS';
+      case QuestionType.multi_select:
+        return 'MULTI-SELECT';
+      case QuestionType.matching:
+        return 'MATCHING';
+      case QuestionType.ordering:
+        return 'ORDERING';
     }
   }
 }

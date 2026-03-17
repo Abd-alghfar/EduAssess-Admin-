@@ -61,14 +61,29 @@ class _StudentAnswersScreenState extends State<StudentAnswersScreen> {
             correctIndex < options.length) {
           return options[correctIndex];
         }
-        return "Unknown";
+        return config['correct_answer'] ?? "Unknown";
       case QuestionType.true_false:
-        if (config.containsKey('is_correct_true')) {
-          return config['is_correct_true'] == true ? "True" : "False";
+        if (config.containsKey('correct_answer')) {
+          return config['correct_answer'] == true ? "True" : "False";
         }
         return "N/A";
       case QuestionType.completion:
-        return config['solution'] ?? config['correct_answer'] ?? "N/A";
+        return config['correct_answer'] ?? "N/A";
+      case QuestionType.multi_select:
+        final correct = config['correct_answers'] as List?;
+        return correct?.join(', ') ?? "N/A";
+      case QuestionType.matching:
+        final left = config['left_side'] as List?;
+        final right = config['right_side'] as List?;
+        if (left == null || right == null) return "N/A";
+        List<String> pairs = [];
+        for (int i = 0; i < left.length && i < right.length; i++) {
+          pairs.add("${left[i]} ↔ ${right[i]}");
+        }
+        return pairs.join(' | ');
+      case QuestionType.ordering:
+        final items = config['items'] as List?;
+        return items?.join(' → ') ?? "N/A";
     }
   }
 

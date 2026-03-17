@@ -24,6 +24,14 @@ class _AddLessonDialogState extends State<AddLessonDialog> {
   DateTime? _scheduledAt;
   DateTime? _expiresAt;
 
+  String _formatDateTime(DateTime? value) {
+    if (value == null) return 'Not set';
+    final d = value;
+    final h = d.hour.toString().padLeft(2, '0');
+    final m = d.minute.toString().padLeft(2, '0');
+    return '${d.day}/${d.month}/${d.year} at $h:$m';
+  }
+
   @override
   void initState() {
     super.initState();
@@ -75,7 +83,7 @@ class _AddLessonDialogState extends State<AddLessonDialog> {
     final date = await showDatePicker(
       context: context,
       initialDate: _expiresAt ?? _scheduledAt ?? DateTime.now(),
-      firstDate: DateTime.now().subtract(const Duration(days: 365)),
+      firstDate: _scheduledAt ?? DateTime.now().subtract(const Duration(days: 365)),
       lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
     );
     if (date == null || !mounted) return;
@@ -103,6 +111,9 @@ class _AddLessonDialogState extends State<AddLessonDialog> {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final title = widget.lesson == null ? 'Create New Quiz' : 'Edit Quiz';
+    final assignment = context.read<TeacherProvider>().currentAssignment;
+    final subjectName = assignment?['subjects']?['name'];
+    final className = assignment?['classes']?['name'];
     final actions = [
       TextButton(
         onPressed: () => Navigator.pop(context),
@@ -125,17 +136,48 @@ class _AddLessonDialogState extends State<AddLessonDialog> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          if (subjectName != null || className != null)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: scheme.outlineVariant),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.school_rounded, color: scheme.primary),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      '${subjectName ?? 'Subject'} • ${className ?? 'Class'}',
+                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          const SizedBox(height: 16),
           TextFormField(
             controller: _titleController,
             decoration: const InputDecoration(
               labelText: 'Quiz Title',
+              hintText: 'e.g. Algebra Basics - Unit 3',
               border: OutlineInputBorder(),
             ),
-            validator: (v) => v!.isEmpty ? 'Required' : null,
+            onChanged: (_) => setState(() {}),
+            validator: (v) {
+              final value = v?.trim() ?? '';
+              if (value.isEmpty) return 'Required';
+              if (value.length < 3) return 'Title is too short';
+              return null;
+            },
           ),
           const SizedBox(height: 16),
           SwitchListTile(
             title: const Text('Enable Timer'),
+            subtitle: const Text('Limit the exam duration in minutes'),
             value: _isTimerEnabled,
             onChanged: (val) {
               setState(() {
@@ -154,12 +196,17 @@ class _AddLessonDialogState extends State<AddLessonDialog> {
                 suffixText: 'min',
               ),
               keyboardType: TextInputType.number,
+              onChanged: (_) => setState(() {}),
               validator: (v) {
                 if (_isTimerEnabled && (v == null || v.isEmpty)) {
                   return 'Required';
                 }
-                if (v != null && v.isNotEmpty && int.tryParse(v) == null) {
+                final parsed = int.tryParse(v ?? '');
+                if (v != null && v.isNotEmpty && parsed == null) {
                   return 'Invalid number';
+                }
+                if (parsed != null && (parsed < 1 || parsed > 300)) {
+                  return 'Duration must be between 1 and 300';
                 }
                 return null;
               },
@@ -173,7 +220,7 @@ class _AddLessonDialogState extends State<AddLessonDialog> {
             subtitle: Text(
               _scheduledAt == null
                   ? 'Click to set date and time'
-                  : '${_scheduledAt!.day}/${_scheduledAt!.month}/${_scheduledAt!.year} at ${_scheduledAt!.hour}:${_scheduledAt!.minute.toString().padLeft(2, '0')}',
+                  : _formatDateTime(_scheduledAt),
             ),
             trailing: _scheduledAt != null
                 ? IconButton(
@@ -194,7 +241,7 @@ class _AddLessonDialogState extends State<AddLessonDialog> {
             subtitle: Text(
               _expiresAt == null
                   ? 'Optionally set an end time'
-                  : '${_expiresAt!.day}/${_expiresAt!.month}/${_expiresAt!.year} at ${_expiresAt!.hour}:${_expiresAt!.minute.toString().padLeft(2, '0')}',
+                  : _formatDateTime(_expiresAt),
             ),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
@@ -238,6 +285,36 @@ class _AddLessonDialogState extends State<AddLessonDialog> {
             value: _isPublished,
             onChanged: (val) => setState(() => _isPublished = val),
           ),
+          const SizedBox(height: 12),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFF),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: scheme.outlineVariant),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Summary',
+                  style: TextStyle(fontWeight: FontWeight.w800),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Title: ${_titleController.text.trim().isEmpty ? 'Untitled' : _titleController.text.trim()}',
+                ),
+                Text(
+                  'Timer: ${_isTimerEnabled ? '${_durationController.text.trim()} min' : 'Off'}',
+                ),
+                Text('Shuffle: ${_shuffleQuestions ? 'On' : 'Off'}'),
+                Text('Publish: ${_isPublished ? 'Yes' : 'No'}'),
+                Text('Start: ${_formatDateTime(_scheduledAt)}'),
+                Text('Deadline: ${_formatDateTime(_expiresAt)}'),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -275,9 +352,36 @@ class _AddLessonDialogState extends State<AddLessonDialog> {
 
     setState(() => _isLoading = true);
     try {
+      final assignment = context.read<TeacherProvider>().currentAssignment;
+      if (assignment == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('No class/subject assigned to this teacher.'),
+              backgroundColor: Colors.redAccent,
+            ),
+          );
+        }
+        if (mounted) setState(() => _isLoading = false);
+        return;
+      }
       final duration = _isTimerEnabled
           ? int.tryParse(_durationController.text)
           : null;
+      if (_scheduledAt != null &&
+          _expiresAt != null &&
+          _expiresAt!.isBefore(_scheduledAt!)) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Deadline must be after the scheduled start.'),
+              backgroundColor: Colors.redAccent,
+            ),
+          );
+        }
+        if (mounted) setState(() => _isLoading = false);
+        return;
+      }
 
       if (widget.lesson == null) {
         final created = await context.read<TeacherProvider>().addLesson(

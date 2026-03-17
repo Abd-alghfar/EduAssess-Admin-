@@ -27,6 +27,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       await provider.fetchAssignments();
       await provider.fetchStudents();
       await provider.fetchLessons();
+      await provider.fetchAnnouncements();
     });
   }
 
@@ -46,6 +47,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           await provider.fetchAssignments();
           await provider.fetchStudents();
           await provider.fetchLessons();
+          await provider.fetchAnnouncements();
         },
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -54,6 +56,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildModernHeader(scheme, provider),
+              const SizedBox(height: 32),
+              _buildAnnouncementsSection(provider),
               const SizedBox(height: 32),
               _buildAssignmentSelector(provider, scheme),
               const SizedBox(height: 32),
@@ -352,6 +356,87 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildAnnouncementsSection(TeacherProvider provider) {
+    final announcements = provider.announcements;
+    if (announcements.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.campaign_outlined, color: Color(0xFF94A3B8)),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'No platform announcements right now.',
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFF),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.campaign_rounded, color: Color(0xFF6366F1)),
+              SizedBox(width: 8),
+              Text(
+                'Platform Announcements',
+                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ...announcements.take(3).map(
+                (a) => Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        a.title,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        a.body,
+                        style: TextStyle(
+                          color: Colors.grey.shade700,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+        ],
+      ),
     );
   }
 

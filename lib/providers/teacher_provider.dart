@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/lesson_model.dart';
 import '../models/profile_model.dart';
 import '../models/student_answer_model.dart';
+import '../models/announcement_model.dart';
 import '../services/supabase_service.dart';
 
 class TeacherProvider with ChangeNotifier {
@@ -17,6 +18,7 @@ class TeacherProvider with ChangeNotifier {
   final Map<String, double> _lessonSuccessRates = {};
   final Map<String, int> _lessonCompletionCounts = {};
   final Map<DateTime, int> _completionTrend = {};
+  List<Announcement> _announcements = [];
 
   List<Profile> get students => _students;
   List<Lesson> get lessons => _lessons;
@@ -26,6 +28,7 @@ class TeacherProvider with ChangeNotifier {
   Map<String, double> get lessonSuccessRates => _lessonSuccessRates;
   Map<String, int> get lessonCompletionCounts => _lessonCompletionCounts;
   Map<DateTime, int> get completionTrend => _completionTrend;
+  List<Announcement> get announcements => _announcements;
 
   Future<void> fetchAssignments() async {
     _isLoading = true;
@@ -91,6 +94,15 @@ class TeacherProvider with ChangeNotifier {
     }
   }
 
+  Future<void> fetchAnnouncements() async {
+    try {
+      _announcements = await _service.getAnnouncementsForRole('teacher');
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error fetching announcements: $e');
+    }
+  }
+
   Future<void> _computeLessonSuccessRates() async {
     _lessonSuccessRates.clear();
     for (final lesson in _lessons) {
@@ -115,6 +127,9 @@ class TeacherProvider with ChangeNotifier {
     DateTime? scheduledAt,
     DateTime? expiresAt,
   }) async {
+    if (_currentAssignment == null) {
+      throw 'No class/subject assigned to this teacher.';
+    }
     final lesson = Lesson(
       id: '',
       title: title,

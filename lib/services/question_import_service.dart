@@ -60,10 +60,16 @@ class QuestionImportService {
                 if (opt.isNotEmpty) options.add(opt);
               }
             }
-            config = {
-              'options': options,
-              'correct_answer': int.tryParse(correctAnswer) ?? 0,
-            };
+            String? correct;
+            final index = int.tryParse(correctAnswer);
+            if (index != null && index >= 0 && index < options.length) {
+              correct = options[index];
+            } else if (options.contains(correctAnswer)) {
+              correct = correctAnswer;
+            } else if (options.isNotEmpty) {
+              correct = options.first;
+            }
+            config = {'options': options, 'correct_answer': correct};
           } else if (type == QuestionType.true_false) {
             config = {'correct_answer': correctAnswer.toLowerCase() == 'true'};
           } else {
