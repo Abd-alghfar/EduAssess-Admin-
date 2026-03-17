@@ -7,6 +7,7 @@ import '../models/question_model.dart';
 import '../models/student_answer_model.dart';
 import '../models/exam_attempt_model.dart';
 import '../models/announcement_model.dart';
+import '../models/question_bank_model.dart';
 
 class SupabaseService {
   final _supabase = Supabase.instance.client;
@@ -159,6 +160,26 @@ class SupabaseService {
 
   Future<void> deleteQuestion(String id) async {
     await _supabase.from('questions').delete().eq('id', id);
+  }
+
+  // --- Question Bank ---
+  Future<List<QuestionBankItem>> getQuestionBank(String teacherId) async {
+    final response = await _supabase
+        .from('question_bank')
+        .select()
+        .eq('teacher_id', teacherId)
+        .order('created_at', ascending: false);
+    return (response as List)
+        .map((json) => QuestionBankItem.fromJson(json))
+        .toList();
+  }
+
+  Future<void> addQuestionToBank(QuestionBankItem item) async {
+    await _supabase.from('question_bank').insert(item.toJson());
+  }
+
+  Future<void> deleteQuestionFromBank(String id) async {
+    await _supabase.from('question_bank').delete().eq('id', id);
   }
 
   // --- Exam Attempts (formerly Student Progress) ---

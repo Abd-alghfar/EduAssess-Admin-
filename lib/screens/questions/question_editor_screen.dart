@@ -28,9 +28,7 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
   int? _mcqCorrectIndex;
 
   // Completion state
-  late TextEditingController _snippetController;
-  late TextEditingController _placeholderController;
-  late TextEditingController _codeCorrectAnswerController;
+  late TextEditingController _essayAnswerController;
 
   // Multi-select state
   List<int> _multiSelectCorrectIndexes = [];
@@ -55,9 +53,7 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
     );
     _type = widget.question?.questionType ?? QuestionType.mcq;
     _points = widget.question?.points ?? 1;
-    _snippetController = TextEditingController();
-    _placeholderController = TextEditingController();
-    _codeCorrectAnswerController = TextEditingController();
+    _essayAnswerController = TextEditingController();
 
     // Initialize based on type
     if (widget.question != null) {
@@ -73,10 +69,8 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
         if (_mcqCorrectIndex != null && _mcqCorrectIndex! < 0) {
           _mcqCorrectIndex = null;
         }
-      } else if (_type == QuestionType.completion) {
-        _snippetController.text = config['code_snippet'] ?? '';
-        _placeholderController.text = config['placeholder'] ?? '';
-        _codeCorrectAnswerController.text = config['correct_answer'] ?? '';
+      } else if (_type == QuestionType.essay) {
+        _essayAnswerController.text = config['correct_answer'] ?? '';
       } else if (_type == QuestionType.true_false) {
         _tfCorrectAnswer = config['correct_answer'] ?? true;
       } else if (_type == QuestionType.multi_select) {
@@ -130,8 +124,7 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
     for (var c in _optionControllers) {
       c.dispose();
     }
-    _snippetController.dispose();
-    _placeholderController.dispose();
+    _essayAnswerController.dispose();
     for (var c in _matchingLeftControllers) {
       c.dispose();
     }
@@ -194,20 +187,24 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
   }
 
   Widget _buildTypeSelector() {
+    final availableTypes = [
+      QuestionType.mcq,
+      QuestionType.true_false,
+      QuestionType.multi_select,
+      QuestionType.essay,
+    ];
     return DropdownButtonFormField<QuestionType>(
       value: _type,
       decoration: const InputDecoration(
         labelText: 'Question Type',
         border: OutlineInputBorder(),
       ),
-      items: QuestionType.values.map((t) {
+      items: availableTypes.map((t) {
         String label = t.toString().split('.').last.toUpperCase();
-        if (t == QuestionType.completion) label = 'FILL IN BLANKS';
         if (t == QuestionType.mcq) label = 'MULTIPLE CHOICE';
         if (t == QuestionType.true_false) label = 'TRUE / FALSE';
         if (t == QuestionType.multi_select) label = 'MULTI-SELECT';
-        if (t == QuestionType.matching) label = 'MATCHING';
-        if (t == QuestionType.ordering) label = 'ORDERING';
+        if (t == QuestionType.essay) label = 'ESSAY';
         return DropdownMenuItem(value: t, child: Text(label));
       }).toList(),
       onChanged: (val) {
@@ -251,24 +248,39 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
         return _buildMCQConfig();
       case QuestionType.true_false:
         return _buildTFConfig();
-      case QuestionType.completion:
-        return _buildCodeConfig();
+      case QuestionType.essay:
+        return _buildEssayConfig();
       case QuestionType.multi_select:
         return _buildMultiSelectConfig();
       case QuestionType.matching:
-        return _buildMatchingConfig();
       case QuestionType.ordering:
-        return _buildOrderingConfig();
+        return _buildUnsupportedConfig();
     }
   }
 
-  Widget _buildCodeConfig() {
+  Widget _buildUnsupportedConfig() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF1F5F9),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: const Text(
+        'هذا النوع غير مدعوم الآن. يرجى اختيار نوع آخر.',
+        style: TextStyle(fontWeight: FontWeight.w600),
+      ),
+    );
+  }
+
+  Widget _buildEssayConfig() {
     return Column(
       children: [
         TextFormField(
-          controller: _codeCorrectAnswerController,
+          controller: _essayAnswerController,
           decoration: const InputDecoration(
-            labelText: 'Answer',
+            labelText: 'Model Answer (Optional)',
             border: OutlineInputBorder(),
           ),
         ),
@@ -556,14 +568,6 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
       }
     }
 
-    if (_type == QuestionType.completion &&
-        _codeCorrectAnswerController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please provide the correct answer')),
-      );
-      return;
-    }
-
     if (_type == QuestionType.multi_select) {
       final options = _optionControllers
           .map((e) => e.text.trim())
@@ -645,8 +649,13 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
       };
     } else if (_type == QuestionType.true_false) {
       config = {'correct_answer': _tfCorrectAnswer};
-    } else if (_type == QuestionType.completion) {
-      config = {'correct_answer': _codeCorrectAnswerController.text.trim()};
+    } else if (_type == QuestionType.essay) {
+      final text = _essayAnswerController.text.trim();
+      if (text.isNotEmpty) {
+        config = {'correct_answer': text};
+      } else {
+        config = {};
+      }
     } else if (_type == QuestionType.multi_select) {
       final options =
           _optionControllers.map((e) => e.text.trim()).toList();

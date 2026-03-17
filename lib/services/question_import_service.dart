@@ -21,12 +21,25 @@ class QuestionImportService {
   static Future<List<Question>> importFromExcel(String lessonId) async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['xlsx'],
+      allowedExtensions: ['xlsx', 'xls'],
     );
 
     if (result == null || result.files.single.path == null) return [];
 
-    var bytes = File(result.files.single.path!).readAsBytesSync();
+    final path = result.files.single.path!;
+    if (!path.toLowerCase().endsWith('.xlsx')) {
+      throw Exception('صيغة الملف غير مدعومة. استخدم ملف .xlsx');
+    }
+
+    var bytes = File(path).readAsBytesSync();
+    if (bytes.length < 4 ||
+        bytes[0] != 0x50 ||
+        bytes[1] != 0x4B) {
+      throw Exception(
+        'الملف ليس Excel صالح. يجب أن يكون ملف .xlsx حقيقي (وليس HTML أو CSV).',
+      );
+    }
+
     var excel = Excel.decodeBytes(bytes);
     List<Question> questions = [];
 
@@ -73,8 +86,10 @@ class QuestionImportService {
           } else if (type == QuestionType.true_false) {
             config = {'correct_answer': correctAnswer.toLowerCase() == 'true'};
           } else {
-            // completion
-            config = {'correct_answer': correctAnswer};
+            // essay
+            config = correctAnswer.isNotEmpty
+                ? {'correct_answer': correctAnswer}
+                : {};
           }
 
           questions.add(

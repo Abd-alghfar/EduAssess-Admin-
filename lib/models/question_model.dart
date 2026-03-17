@@ -4,14 +4,20 @@ import 'lesson_model.dart';
 enum QuestionType {
   mcq,
   true_false,
-  completion,
+  essay,
   multi_select,
   matching,
   ordering;
 
   static QuestionType fromString(String value) {
+    final normalized = value.toLowerCase();
+    if (normalized == 'completion' ||
+        normalized == 'code' ||
+        normalized == 'code_completion') {
+      return QuestionType.essay;
+    }
     return QuestionType.values.firstWhere(
-      (e) => e.toString().split('.').last == value,
+      (e) => e.toString().split('.').last == normalized,
       orElse: () => QuestionType.mcq,
     );
   }
