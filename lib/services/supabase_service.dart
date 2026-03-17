@@ -140,6 +140,12 @@ class SupabaseService {
     await _supabase.from('questions').insert(question.toJson());
   }
 
+  Future<void> bulkCreateQuestions(List<Question> questions) async {
+    if (questions.isEmpty) return;
+    final jsonList = questions.map((q) => q.toJson()).toList();
+    await _supabase.from('questions').insert(jsonList);
+  }
+
   Future<void> updateQuestion(String id, Question question) async {
     await _supabase.from('questions').update(question.toJson()).eq('id', id);
   }

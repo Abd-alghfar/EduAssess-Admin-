@@ -5,6 +5,7 @@ import '../../services/supabase_service.dart';
 import 'question_editor_screen.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../widgets/shimmer_loader.dart';
+import '../../services/question_import_service.dart';
 
 class QuestionsListScreen extends StatefulWidget {
   final Lesson lesson;
@@ -43,6 +44,12 @@ class _QuestionsListScreenState extends State<QuestionsListScreen> {
       appBar: AppBar(
         title: Text('Quiz Questions: ${widget.lesson.title}'),
         actions: [
+          IconButton.outlined(
+            onPressed: _bulkImport,
+            icon: const Icon(Icons.upload_file_rounded),
+            tooltip: 'Bulk Import from Excel',
+          ),
+          const SizedBox(width: 8),
           Padding(
             padding: const EdgeInsets.only(right: 16),
             child: FilledButton.icon(
@@ -196,6 +203,37 @@ class _QuestionsListScreenState extends State<QuestionsListScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _bulkImport() async {
+    try {
+      final questions = await QuestionImportService.importFromExcel(
+        widget.lesson.id,
+      );
+      if (questions.isEmpty) return;
+
+      setState(() => _isLoading = true);
+      await _service.bulkCreateQuestions(questions);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Successfully imported ${questions.length} questions!',
+            ),
+            backgroundColor: Colors.green.shade700,
+          ),
+        );
+      }
+      _loadQuestions();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error importing questions: $e')),
+        );
+      }
+      setState(() => _isLoading = false);
+    }
   }
 
   String _getQuestionTypeLabel(QuestionType type) {
